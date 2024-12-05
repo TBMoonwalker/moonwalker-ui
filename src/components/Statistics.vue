@@ -38,7 +38,7 @@ watch(statistics_data.json, async (newData) => {
 
 }, { immediate: true })
 
-function row_classes(data) {
+function row_classes(data: any) {
     if (Math.sign(data) >= 0) {
         return 'green'
     } else {

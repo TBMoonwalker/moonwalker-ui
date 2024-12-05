@@ -14,16 +14,17 @@ const open_trade_store = useWebSocketDataStore("openTrades")
 const closed_trade_store = useWebSocketDataStore("closedTrades")
 const statistics_store = useWebSocketDataStore("statistics")
 const websocket_port = 8120
+const hostname = window.location.hostname
 
-const closed_orders = useWebSocket('ws://127.0.0.1:' + websocket_port + '/closed_orders', {
+const closed_orders = useWebSocket('ws://' + hostname + ':' + websocket_port + '/closed_orders', {
   autoReconnect: true,
 })
 
-const open_orders = useWebSocket('ws://127.0.0.1:' + websocket_port + '/open_orders', {
+const open_orders = useWebSocket('ws://' + hostname + ':' + websocket_port + '/open_orders', {
   autoReconnect: true,
 })
 
-const statistics = useWebSocket('ws://127.0.0.1:' + websocket_port + '/statistics', {
+const statistics = useWebSocket('ws://' + hostname + ':' + websocket_port + '/statistics', {
   autoReconnect: true,
 })
 

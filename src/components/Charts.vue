@@ -53,7 +53,7 @@ watch(statistics_data.json, async (newData) => {
 
 }, { immediate: true })
 
-function chart_classes(data) {
+function chart_classes(data: any) {
     if (Math.sign(data) >= 0) {
         return 'green'
     } else {

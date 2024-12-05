@@ -26,20 +26,21 @@ const pageReactive = reactive({
       }
     });
 const api_port = 8120
+const hostname = window.location.hostname
 
 const updatePageCount = () => {
     pageReactive.pageCount = Math.ceil(closed_trades_length.value / pageReactive.pageSize)
     pageReactive.itemCount = closed_trades_length.value
     }
 
-const updateData = async (currentPage) => {
+const updateData = async (currentPage: number) => {
     let pagination = 0
     if (currentPage == 1) {
         const data = closed_trades
         paged_closed_trades.value = data.value
     } else {
         pagination = (currentPage -1) * pageReactive.pageSize
-        const data  = await fetch(`http://localhost:${api_port}/orders/closed/${pagination}`).then((response) =>
+        const data  = await fetch(`http://${hostname}:${api_port}/orders/closed/${pagination}`).then((response) =>
             response.json()
         )
 
@@ -48,9 +49,9 @@ const updateData = async (currentPage) => {
     
 }
 
-async function convertData(data) {
+async function convertData(data: any) {
     const convert_data = ref(data)
-    data.forEach(function (val, i) {
+    data.forEach(function (val: any, i: any) {
         var amount_length = 0
         if (isFloat(val.amount)) {
             amount_length = convert_data.value[i].amount.toString().split('.')[1].length
@@ -81,7 +82,7 @@ async function convertData(data) {
     return data
 }
 
-const handlePageChange = async (currentPage) => {
+const handlePageChange = async (currentPage: any) => {
     pageReactive.page = currentPage
     updateData(currentPage)
 }
@@ -95,7 +96,7 @@ watch(closed_trade_data.json, async (newData) => {
         closed_trades.value = await convertData(websocket_data)
         
         // Get actual closed orders length to calculate pagination
-        closed_trades_length.value = await fetch(`http://localhost:${api_port}/orders/closed/length`).then((response) =>
+        closed_trades_length.value = await fetch(`http://${hostname}:${api_port}/orders/closed/length`).then((response) =>
             response.json()
         )
         updatePageCount()
