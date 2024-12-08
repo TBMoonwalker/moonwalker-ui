@@ -114,6 +114,7 @@ const columns_trades = (): DataTableColumns<RowData> => {
                                 time: date,
                             })
 
+                    // Safety Orders
                     if (rowData.safetyorder) {
                         console.log(rowData.safetyorder)    
                         rowData.safetyorder.forEach (function (val: any, i: any) {
@@ -126,8 +127,8 @@ const columns_trades = (): DataTableColumns<RowData> => {
                                 time: date,
                             })
                     })
-                    return timeline_items
                     }
+                    return timeline_items
 
                     
                 },
