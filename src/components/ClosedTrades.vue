@@ -62,6 +62,10 @@ async function convertData(data: any) {
         convert_data.value[i].profit_percent = val.profit_percent.toFixed(2)
         convert_data.value[i].amount = val.amount.toFixed(amount_length)
         convert_data.value[i].key = val.id
+        let timestamp: number = Date.parse(val.close_date);
+        let date = new Date(timestamp);
+        convert_data.value[i].close_date = date.toLocaleString()
+
         if (isJsonString(convert_data.value[i].duration)) {
             const duration = JSON.parse(convert_data.value[i].duration)
             if (duration['days'] != 0) {
@@ -158,8 +162,12 @@ const columns_trades = (): DataTableColumns<RowData> => {
             align: 'center'
         },
         {
-            title: 'duration',
+            title: 'Duration',
             key: 'duration'
+        },
+        {
+            title: 'Close date',
+            key: 'close_date'
         },
     ]
 }
