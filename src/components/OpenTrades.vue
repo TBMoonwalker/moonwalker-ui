@@ -13,32 +13,13 @@ import { isFloat } from '../helpers/validators'
 const open_trade_store = useWebSocketDataStore("openTrades")
 const open_trade_data = storeToRefs(open_trade_store)
 const open_trades = ref()
-const safety_orders = ref()
-// type SliderThemeOverrides = NonNullable<SliderProps['themeOverrides']>
-// const slider_theme_overrides: SliderThemeOverrides = {
-//     markFontSize: '7px',
-//     handleSize: '8px',
-//     opacityDisabled: '1',
-//     fillColor: 'rgba(24, 160, 83, 1)'
-// }
-// Theme Component overide
-
-
-// function getSafetyOrders(symbol: string) {
-//     const json_data = ref()
-//     fetch('http://127.0.0.1:8120/safety_orders/' + symbol)
-//         .then(response => response.json())
-//         .then(data => json_data.value = data);
-//     console.log(json_data.value)
-//     return json_data
-// }
 
 watch(open_trade_data.json, async (newData) => {
     if (newData !== undefined) {
-        const websocket_data: RowData[] = JSON.parse(newData)
+        const websocket_data = JSON.parse(newData)
         open_trades.value = websocket_data
 
-        websocket_data.forEach(function (val, i) {
+        websocket_data.forEach(function (val: any, i: any) {
             var amount_length = 0
             var cost_length = 0
             var tp_length = 0
@@ -74,12 +55,18 @@ watch(open_trade_data.json, async (newData) => {
             let date = new Date(Math.trunc(parseFloat(val.open_date)));
             open_trades.value[i].open_date = date.toLocaleString()
 
-            // get new safety order information
-            // if (val.so_count > open_trades.value[i].so_count) {
-            //     const [symbol, currency] = open_trades.value[i].symbol.split("/")
-            //     const pair = symbol + "/" + currency
-            //     safety_orders.value = getSafetyOrders(pair)
+            open_trades.value[i].safetyorder = val.safetyorders
+
+            //open_trades.value[i].trades["baseorder"]["cost"] = val["baseorder"].ordersize
+            //open_trades.value[i].trades["baseorder"]["amount"] = val["baseorder"].amount
+
+            // if (val.safetyorders) {
+            //     const safety_order = val.safetyorders
+            //     safety_order.forEach(function (val: any, i: any) { 
+            //         console.log(val)
+            //     })
             // }
+            
         })
     }
 }, { immediate: true })
@@ -96,6 +83,16 @@ type RowData = {
     avg_price: number
     so_count: number
     open_date: string
+    baseorder: OrderData
+    safetyorder: Array<OrderData>
+}
+
+type OrderData = {
+    id: number
+    timestamp: string
+    ordersize: number
+    amount: number
+    symbol: string
 }
 
 function row_classes(row: RowData) {
@@ -106,36 +103,67 @@ function row_classes(row: RowData) {
     }
 }
 
-const timeline_items = [
-    h(NTimelineItem, {
-        title: "Baseorder",
-        type: 'success',
-        time: "2018-04-03 20:46",
-    }),
-    h(NTimelineItem, {
-        title: "Safety Order 1",
-        type: 'success',
-        time: "2018-04-03 20:46",
-    }),
-    h(NTimelineItem, {
-        title: "Safety Order 2",
-        type: 'success',
-        time: "2018-04-03 20:46",
-    }),
-]
+// [
+//     h(NTimelineItem, {
+//         title: "Baseorder",
+//         type: 'success',
+//         time: "2018-04-03 20:46",
+//     }),
+//     h(NTimelineItem, {
+//         title: "Safety Order 1",
+//         type: 'success',
+//         time: "2018-04-03 20:46",
+//     }),
+//     h(NTimelineItem, {
+//         title: "Safety Order 2",
+//         type: 'success',
+//         time: "2018-04-03 20:46",
+//     }),
+// ]
 
-const timeline = h(
-    NTimeline, {
-    horizontal: true
-}, () => timeline_items
-)
+// const timeline = h(
+//     NTimeline, {
+//     horizontal: true
+// }, () => timeline_items
+// )
 
 const columns_trades = (): DataTableColumns<RowData> => {
     return [
         {
             type: 'expand',
             expandable: (rowData) => rowData.symbol != "",
-            renderExpand: () => {
+            renderExpand: (rowData) => {
+                const timeline = h(
+                    NTimeline, {
+                    horizontal: true
+                }, () => {
+                    let timeline_items: Array<any> = []
+                    // Baseorder
+                    let timestamp = new Date(Math.trunc(parseFloat(rowData.baseorder.timestamp)))
+                    let date = timestamp.toLocaleString()
+                    timeline_items[0] = h(NTimelineItem, {
+                                title: "Baseorder",
+                                type: 'info',
+                                time: date,
+                            })
+
+                    if (rowData.safetyorder) {
+                        console.log(rowData.safetyorder)    
+                        rowData.safetyorder.forEach (function (val: any, i: any) {
+                            let timestamp = new Date(Math.trunc(parseFloat(val.timestamp)))
+                            let date = timestamp.toLocaleString()
+                            timeline_items[(i + 1)] = h(NTimelineItem, {
+                                title: "Safetyorder " + (i + 1),
+                                type: 'success',
+                                time: date,
+                            })
+                    })
+                    return timeline_items
+                    }
+
+                    
+                },
+                )
                 return timeline
             },
         },
