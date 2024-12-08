@@ -33,7 +33,7 @@ watch(statistics_data.json, async (newData) => {
         upnl_class.value = row_classes(upnl.value)
         profit_overall.value = websocket_data.profit_overall.toFixed(2)
         profit_class.value = row_classes(profit_overall.value)
-        funds_locked.value = websocket_data.funds_locked
+        funds_locked.value = websocket_data.funds_locked.toFixed(2)
     }
 
 }, { immediate: true })
