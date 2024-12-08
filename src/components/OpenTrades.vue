@@ -54,18 +54,7 @@ watch(open_trade_data.json, async (newData) => {
             open_trades.value[i].key = val.id
             let date = new Date(Math.trunc(parseFloat(val.open_date)));
             open_trades.value[i].open_date = date.toLocaleString()
-
             open_trades.value[i].safetyorder = val.safetyorders
-
-            //open_trades.value[i].trades["baseorder"]["cost"] = val["baseorder"].ordersize
-            //open_trades.value[i].trades["baseorder"]["amount"] = val["baseorder"].amount
-
-            // if (val.safetyorders) {
-            //     const safety_order = val.safetyorders
-            //     safety_order.forEach(function (val: any, i: any) { 
-            //         console.log(val)
-            //     })
-            // }
             
         })
     }
@@ -93,6 +82,7 @@ type OrderData = {
     ordersize: number
     amount: number
     symbol: string
+    price: number
 }
 
 function row_classes(row: RowData) {
@@ -103,30 +93,6 @@ function row_classes(row: RowData) {
     }
 }
 
-// [
-//     h(NTimelineItem, {
-//         title: "Baseorder",
-//         type: 'success',
-//         time: "2018-04-03 20:46",
-//     }),
-//     h(NTimelineItem, {
-//         title: "Safety Order 1",
-//         type: 'success',
-//         time: "2018-04-03 20:46",
-//     }),
-//     h(NTimelineItem, {
-//         title: "Safety Order 2",
-//         type: 'success',
-//         time: "2018-04-03 20:46",
-//     }),
-// ]
-
-// const timeline = h(
-//     NTimeline, {
-//     horizontal: true
-// }, () => timeline_items
-// )
-
 const columns_trades = (): DataTableColumns<RowData> => {
     return [
         {
@@ -135,7 +101,7 @@ const columns_trades = (): DataTableColumns<RowData> => {
             renderExpand: (rowData) => {
                 const timeline = h(
                     NTimeline, {
-                    horizontal: true
+                    horizontal: false
                 }, () => {
                     let timeline_items: Array<any> = []
                     // Baseorder
@@ -143,6 +109,7 @@ const columns_trades = (): DataTableColumns<RowData> => {
                     let date = timestamp.toLocaleString()
                     timeline_items[0] = h(NTimelineItem, {
                                 title: "Baseorder",
+                                content: "Order size: " + rowData.baseorder.ordersize + " | Amount: " + rowData.baseorder.amount + " | Price: " + rowData.baseorder.price,
                                 type: 'info',
                                 time: date,
                             })
@@ -154,6 +121,7 @@ const columns_trades = (): DataTableColumns<RowData> => {
                             let date = timestamp.toLocaleString()
                             timeline_items[(i + 1)] = h(NTimelineItem, {
                                 title: "Safetyorder " + (i + 1),
+                                content: "Order size: " + val.ordersize + " | Amount: " + val.amount + " | Price: " + val.price,
                                 type: 'success',
                                 time: date,
                             })
