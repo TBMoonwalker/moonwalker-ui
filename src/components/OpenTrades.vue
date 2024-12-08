@@ -64,8 +64,6 @@ watch(open_trade_data.json, async (newData) => {
                 current_length = open_trades.value[i].current_price.toString().split('.')[1].length
             }
 
-            //console.log(val)
-
             open_trades.value[i].cost = val.cost.toFixed(cost_length)
             open_trades.value[i].profit = val.profit.toFixed(2)
             open_trades.value[i].amount = val.amount.toFixed(amount_length)
@@ -73,6 +71,8 @@ watch(open_trade_data.json, async (newData) => {
             open_trades.value[i].tp_price = val.tp_price.toFixed(tp_length)
             open_trades.value[i].avg_price = val.avg_price.toFixed(avg_length)
             open_trades.value[i].key = val.id
+            let date = new Date(Math.trunc(parseFloat(val.open_date)));
+            open_trades.value[i].open_date = date.toLocaleString()
 
             // get new safety order information
             // if (val.so_count > open_trades.value[i].so_count) {
@@ -95,6 +95,7 @@ type RowData = {
     tp_price: number
     avg_price: number
     so_count: number
+    open_date: string
 }
 
 function row_classes(row: RowData) {
@@ -203,6 +204,11 @@ const columns_trades = (): DataTableColumns<RowData> => {
         {
             title: 'Safety Order Count',
             key: 'so_count',
+            align: 'center'
+        },
+        {
+            title: 'Open Date',
+            key: 'open_date',
             align: 'center'
         },
     ]

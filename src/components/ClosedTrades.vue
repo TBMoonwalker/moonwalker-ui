@@ -118,6 +118,7 @@ type RowData = {
     profit_percent: number
     so_count: number
     duration: string
+    close_date: string
 }
 
 function row_classes(row: RowData) {
