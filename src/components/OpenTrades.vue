@@ -122,7 +122,7 @@ const columns_trades = (): DataTableColumns<RowData> => {
                             let date = timestamp.toLocaleString()
                             timeline_items[(i + 1)] = h(NTimelineItem, {
                                 title: "Safetyorder " + (i + 1),
-                                content: "Order size: " + val.ordersize + " | Amount: " + val.amount + " | Price: " + val.price,
+                                content: "Order size: " + val.ordersize + " | Amount: " + val.amount + " | Price: " + val.price + " | Percentage: " + val.so_percentage,
                                 type: 'success',
                                 time: date,
                             })
