@@ -187,9 +187,9 @@ const columns_trades = (): DataTableColumns<RowData> => {
                 const marks = { [avg_price]: 'avg', [tp_price]: 'tp' }
                 const fillColor = ref()
                 if (current_price < avg_price) {
-                    fillColor.value = 'rgba(255, 0, 4, 1)'
+                    fillColor.value = 'rgb(224, 108, 117)'
                 } else {
-                    fillColor.value = 'rgba(24, 160, 83, 1)'
+                    fillColor.value = 'rgb(99, 226, 183)'
                 }
                 return [
                     h(NSlider, { value: [current_price, avg_price], range: true, marks: marks, min: min_price, max: max_price, disabled: true, themeOverrides: { fillColor: fillColor.value, handleSize: '8px', opacityDisabled: '1' } }),

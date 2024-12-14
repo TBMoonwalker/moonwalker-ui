@@ -18,7 +18,7 @@ import Charts from '@/components/Charts.vue';
             pane-style="padding: 20px;"
         >
             <n-tab-pane name="Daily Profit">
-              <div class="chart-wrapper" style="height: 20vh;">
+              <div class="chart-wrapper" style="height: 25vh;">
                 <Charts />
               </div>
             </n-tab-pane>
