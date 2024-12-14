@@ -1,6 +1,5 @@
 <template>
-    <n-h2>Open Trades</n-h2>
-    <n-data-table remote ref="table" :columns="columns_open_trades" :data="open_trades" :row-class-name="row_classes" />
+    <n-data-table size="small" remote ref="table" :columns="columns_open_trades" :data="open_trades" :row-class-name="row_classes" />
 </template>
 
 <script setup lang="ts">
@@ -217,11 +216,15 @@ const columns_open_trades = columns_trades()
 
 <style scoped>
 :deep(.red .profit) {
-    color: rgb(255, 0, 0) !important;
+    color: rgb(224, 108, 117) !important;
 }
 
 :deep(.green .profit) {
-    color: rgb(0, 255, 0) !important;
+    color: rgb(99, 226, 183) !important;
+}
+
+.n-data-table {
+    width: 97%;
 }
 </style>
 

@@ -1,15 +1,7 @@
 <template>
-    <n-grid :cols="3">
-        <n-gi>
-            <n-statistic id="profit_overall" :class="profit_class" label="Profit overall" :value="profit_overall" />
-        </n-gi>
-        <n-gi>
-            <n-statistic id="upnl" :class="upnl_class" label="UPNL" :value="upnl" />
-        </n-gi>
-        <n-gi>
-            <n-statistic label="Funds locked" :value="funds_locked" />
-        </n-gi>
-    </n-grid>
+    <n-statistic :class="profit_class" label="Profit overall" :value="profit_overall" />
+    <n-statistic :class="upnl_class" label="UPNL" :value="upnl" />
+    <n-statistic label="Funds locked" :value="funds_locked" />
 </template>
 
 <script setup lang="ts">
@@ -49,20 +41,12 @@ function row_classes(data: any) {
 </script>
 
 <style scoped>
-:deep(#profit_overall.n-statistic.red) {
-  --n-value-text-color: rgba(255, 0, 0, 0.75) !important;
+.red {
+  --n-value-text-color: rgb(224, 108, 117) !important;
 }
 
-:deep(#profit_overall.n-statistic.green) {
-    --n-value-text-color: rgb(0, 255, 0) !important;
-}
-
-:deep(#upnl.n-statistic.red) {
-  --n-value-text-color: rgba(255, 0, 0, 0.75) !important;
-}
-
-:deep(#upnl.n-statistic.green) {
-    --n-value-text-color: rgb(0, 255, 0) !important;
+.green {
+    --n-value-text-color: rgb(99, 226, 183) !important;
 }
 </style>
 

@@ -1,5 +1,4 @@
 <template>
-    <n-h2>Closed Trades</n-h2>
     <n-data-table remote ref="table" :columns="columns_closed_trades" :data="paged_closed_trades" :row-class-name="row_classes" :pagination="pageReactive" @update:page="handlePageChange"/>
 </template>
 
@@ -96,7 +95,6 @@ watch(closed_trade_data.json, async (newData) => {
     if (newData !== undefined) {
         const websocket_data: RowData[] = JSON.parse(newData)
         closed_trades.value = websocket_data
-
         closed_trades.value = await convertData(websocket_data)
         
         // Get actual closed orders length to calculate pagination
@@ -183,8 +181,13 @@ const columns_closed_trades = columns_trades()
 }
 
 :deep(.green .profit) {
-    color: rgb(0, 255, 0) !important;
+    color: rgb(99, 226, 183) !important;
 }
+
+.n-data-table {
+    width: 98%;
+}
+
 </style>
 
 

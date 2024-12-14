@@ -56,25 +56,7 @@ function chart_classes(data: any) {
 }
 
 const chart_options = {
-    responsive: true,
-    scales: {
-        x: {
-            ticks: {
-                color: "white",
-            },
-            grid: {
-            display: false
-            }
-        },
-        y: {
-            ticks: {
-                color: "white",
-            },
-            grid: {
-            display: false
-            }
-        }
-    }
+    responsive: true
 }
 
 </script>
