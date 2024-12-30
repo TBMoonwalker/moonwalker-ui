@@ -3,14 +3,11 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, watch } from 'vue'
-import { type DataTableColumns, NTimeline, NTimelineItem, NDivider, NSlider, NButton, NButtonGroup, useDialog, useMessage, NInput } from 'naive-ui'
+import { h, ref, watch, onMounted } from 'vue'
+import { type DataTableColumns, NTimeline, NTimelineItem, NDivider, NSlider, NButton, NButtonGroup, useDialog, useMessage, NInput, NFlex, NCard } from 'naive-ui'
 import { useWebSocketDataStore } from '../stores/websocket'
 import { storeToRefs } from 'pinia'
 import { isFloat } from '../helpers/validators'
-import { prefix } from 'naive-ui/es/_utils/cssr'
-import { templateRef } from '@vueuse/core'
-import { valueOrDefault } from 'chart.js/helpers'
 
 const open_trade_store = useWebSocketDataStore("openTrades")
 const open_trade_data = storeToRefs(open_trade_store)
@@ -19,7 +16,7 @@ const open_trades = ref()
 const dialog = useDialog()
 const message = useMessage()
 
-const api_port = 8150
+const api_port = 8120
 const hostname = window.location.hostname
 
 
@@ -158,42 +155,44 @@ const columns_trades = (): DataTableColumns<RowData> => {
             type: 'expand',
             expandable: (rowData) => rowData.symbol != "",
             renderExpand: (rowData) => {
-                const timeline = h(
-                    NTimeline, {
-                    horizontal: false
-                }, () => {
-                    let timeline_items: Array<any> = []
-                    // Baseorder
-                    let timestamp = new Date(Math.trunc(parseFloat(rowData.baseorder.timestamp)))
-                    let date = timestamp.toLocaleString()
-                    timeline_items[0] = h(NTimelineItem, {
-                                title: "Baseorder",
-                                content: "Order size: " + rowData.baseorder.ordersize + " | Amount: " + rowData.baseorder.amount + " | Price: " + rowData.baseorder.price,
-                                type: 'info',
-                                time: date,
-                            })
+                return [
+                    h(NFlex, {}, { default: () => [
+                        h(NCard, {}, { default: () => 
+                            h(NTimeline, {
+                                horizontal: false
+                            }, () => {
+                                let timeline_items: Array<any> = []
+                                // Baseorder
+                                let timestamp = new Date(Math.trunc(parseFloat(rowData.baseorder.timestamp)))
+                                let date = timestamp.toLocaleString()
+                                timeline_items[0] = h(NTimelineItem, {
+                                            title: "Baseorder",
+                                            content: "Order size: " + rowData.baseorder.ordersize + " | Amount: " + rowData.baseorder.amount + " | Price: " + rowData.baseorder.price,
+                                            type: 'info',
+                                            time: date,
+                                        })
 
-                    // Safety Orders
-                    if (rowData.safetyorder) {
-                        console.log(rowData.safetyorder)    
-                        rowData.safetyorder.forEach (function (val: any, i: any) {
-                            let timestamp = new Date(Math.trunc(parseFloat(val.timestamp)))
-                            let date = timestamp.toLocaleString()
-                            timeline_items[(i + 1)] = h(NTimelineItem, {
-                                title: "Safetyorder " + (i + 1),
-                                content: "Order size: " + val.ordersize + " | Amount: " + val.amount + " | Price: " + val.price + " | Percentage: " + val.so_percentage,
-                                type: 'success',
-                                time: date,
+                                // Safety Orders
+                                if (rowData.safetyorder) {
+                                    console.log(rowData.safetyorder)    
+                                    rowData.safetyorder.forEach (function (val: any, i: any) {
+                                        let timestamp = new Date(Math.trunc(parseFloat(val.timestamp)))
+                                        let date = timestamp.toLocaleString()
+                                        timeline_items[(i + 1)] = h(NTimelineItem, {
+                                            title: "Safetyorder " + (i + 1),
+                                            content: "Order size: " + val.ordersize + " | Amount: " + val.amount + " | Price: " + val.price + " | Percentage: " + val.so_percentage,
+                                            type: 'success',
+                                            time: date,
+                                        })
+                                })
+                                }
+                                return timeline_items
                             })
-                    })
-                    }
-                    return timeline_items
-
+                        })
+                    ]
                     
-                },
-                )
-                return timeline
-            },
+                })]
+            }
         },
         {
             title: '#',
