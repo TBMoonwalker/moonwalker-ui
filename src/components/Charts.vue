@@ -23,7 +23,7 @@ chart_data.value = {
     datasets: [{ }]
 }
 
-const api_port = 8150
+const api_port = 8120
 const hostname = window.location.hostname
 
 let historic_data = false

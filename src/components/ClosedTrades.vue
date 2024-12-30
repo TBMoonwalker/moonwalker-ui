@@ -24,7 +24,7 @@ const pageReactive = reactive({
         return `Total ${itemCount} trades`
       }
     });
-const api_port = 8150
+const api_port = 8120
 const hostname = window.location.hostname
 
 const updatePageCount = () => {

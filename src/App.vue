@@ -13,7 +13,7 @@ const theme = computed(() => (osThemeRef.value === 'dark' ? darkTheme : null))
 const open_trade_store = useWebSocketDataStore("openTrades")
 const closed_trade_store = useWebSocketDataStore("closedTrades")
 const statistics_store = useWebSocketDataStore("statistics")
-const websocket_port = 8150
+const websocket_port = 8120
 const hostname = window.location.hostname
 
 const closed_orders = useWebSocket('ws://' + hostname + ':' + websocket_port + '/closed_orders', {
