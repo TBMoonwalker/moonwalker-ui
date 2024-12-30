@@ -16,14 +16,14 @@ ChartJS.register(BarElement, Tooltip, CategoryScale, LinearScale)
 
 const statistics_store = useWebSocketDataStore("statistics")
 const statistics_data = storeToRefs(statistics_store)
-let historic_chart_data = [{}]
+let historic_chart_data: any = [{}]
 const chart_data  = ref()
 chart_data.value = {
     labels: [],
     datasets: [{ }]
 }
 
-const api_port = 8120
+const api_port = 8150
 const hostname = window.location.hostname
 
 let historic_data = false
@@ -73,20 +73,6 @@ async function get_historic_chart_data() {
     historic_chart_data  = await fetch(`http://${hostname}:${api_port}/profit/statistics`).then((response) =>
             response.json()
         )
-
-    // if (data !== undefined) {
-    //     for (let key in data.profit_month) {
-    //         let value = data.profit_month[key]
-    //         labels.push(key)
-    //         datasets.push(value)
-    //         background_colors.push(chart_classes(value))
-    //     }
-
-    //     chart_data.value = {
-    //         labels: labels,
-    //         datasets: [{ data: datasets, backgroundColor: background_colors, borderRadius: 5 }]
-    //     }
-    // }
     
 }
 

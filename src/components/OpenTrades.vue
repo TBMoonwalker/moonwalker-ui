@@ -3,15 +3,25 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, toValue, watch } from 'vue'
-import { type DataTableColumns, NTimeline, NTimelineItem, NDivider, NSlider, type SliderProps } from 'naive-ui'
+import { h, ref, watch } from 'vue'
+import { type DataTableColumns, NTimeline, NTimelineItem, NDivider, NSlider, NButton, NButtonGroup, useDialog, useMessage, NInput } from 'naive-ui'
 import { useWebSocketDataStore } from '../stores/websocket'
 import { storeToRefs } from 'pinia'
 import { isFloat } from '../helpers/validators'
+import { prefix } from 'naive-ui/es/_utils/cssr'
+import { templateRef } from '@vueuse/core'
+import { valueOrDefault } from 'chart.js/helpers'
 
 const open_trade_store = useWebSocketDataStore("openTrades")
 const open_trade_data = storeToRefs(open_trade_store)
 const open_trades = ref()
+
+const dialog = useDialog()
+const message = useMessage()
+
+const api_port = 8150
+const hostname = window.location.hostname
+
 
 watch(open_trade_data.json, async (newData) => {
     if (newData !== undefined) {
@@ -82,6 +92,56 @@ type OrderData = {
     amount: number
     symbol: string
     price: number
+}
+
+function handle_deal_sell(data: any) {
+    dialog.warning({
+        title: 'Selling deal',
+        content: 'Do you like to sell ' + data["amount"] + ' ' + data["symbol"] + ' ?',
+        positiveText: 'Sell',
+        negativeText: 'Do not sell',
+        onPositiveClick: async () => {
+            const [symbol, currency] = data["symbol"].toLowerCase().split("/")
+            const result = await fetch(`http://${hostname}:${api_port}/orders/sell/${symbol+currency}`).then((response) =>
+                response.json()
+            )
+            if (result["sell"]) {
+                message.success('Sold ' + data["amount"] + ' ' + data["symbol"])
+            } else {
+                message.error('Failed to sell' + data["amount"] + ' ' + data["symbol"] + ' - please check your logs')
+            }
+            
+        },
+        onNegativeClick: () => {
+            message.error('Cancelled')
+        }
+    })
+}
+
+function handle_deal_buy(data: any) {
+    var amount = ""
+    const [symbol, currency] = data["symbol"].toLowerCase().split("/")
+    dialog.warning({
+        title: 'Adding funds',
+        content: () => h(NInput, {onUpdateValue: (value) => {amount = value}, allowInput: (value: string) => !value || /^\d+$/.test(value), placeholder: "Add amount in " + currency.toUpperCase()}),
+        positiveText: 'Add funds',
+        negativeText: 'Cancel',
+        onPositiveClick: async () => {
+            
+            const result = await fetch(`http://${hostname}:${api_port}/orders/buy/${symbol+currency}/${amount}`).then((response) =>
+                response.json()
+            )
+            if (result["new_so"]) {
+                message.success('Added ' + amount + ' ' + currency.toUpperCase() + ' for ' + symbol.toUpperCase())
+            } else {
+                message.error('Failed to add ' + amount + ' ' + currency.toUpperCase() + ' for ' + symbol.toUpperCase())
+            }
+            
+        },
+        onNegativeClick: () => {
+            message.error('Cancelled')
+        }
+    })
 }
 
 function row_classes(row: RowData) {
@@ -200,6 +260,20 @@ const columns_trades = (): DataTableColumns<RowData> => {
         {
             title: 'Safety Order Count',
             key: 'so_count',
+            align: 'center'
+        },
+        {
+            title: 'Action',
+            key: 'action',
+            render: (rowData) => {
+                return [
+                    h(NButtonGroup, {size: 'small'}, { default: () => [
+                        h(NButton, {primary: true, size: 'small', onClick: () => handle_deal_sell(rowData)}, { default: () => 'Sell'}),
+                        h(NButton, {primary: true, size: 'small', onClick: () => handle_deal_buy(rowData)}, { default: () => 'Buy'})
+                    ]
+                    })
+                ]
+            },
             align: 'center'
         },
         {

@@ -13,7 +13,7 @@ const theme = computed(() => (osThemeRef.value === 'dark' ? darkTheme : null))
 const open_trade_store = useWebSocketDataStore("openTrades")
 const closed_trade_store = useWebSocketDataStore("closedTrades")
 const statistics_store = useWebSocketDataStore("statistics")
-const websocket_port = 8120
+const websocket_port = 8150
 const hostname = window.location.hostname
 
 const closed_orders = useWebSocket('ws://' + hostname + ':' + websocket_port + '/closed_orders', {
@@ -49,11 +49,19 @@ watch(statistics.data, async (newData) => {
 <template>
   <n-config-provider :theme="theme">
     <n-global-style />
-    <n-flex justify="center">
-      <Header />
-    </n-flex>
-    <n-flex justify="center">
-      <RouterView />
-    </n-flex>
+    <n-message-provider>
+      <n-notification-provider>
+        <n-modal-provider>
+          <n-dialog-provider>
+            <n-flex justify="center">
+              <Header />
+            </n-flex>
+            <n-flex justify="center">
+              <RouterView />
+            </n-flex>
+          </n-dialog-provider>
+        </n-modal-provider>
+      </n-notification-provider>
+    </n-message-provider>
   </n-config-provider>
 </template>
