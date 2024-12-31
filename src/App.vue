@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { API_PORT } from './config'
 import { RouterView } from 'vue-router'
 import Header from './components/Header.vue'
 import { useOsTheme, darkTheme } from 'naive-ui'
@@ -13,7 +14,7 @@ const theme = computed(() => (osThemeRef.value === 'dark' ? darkTheme : null))
 const open_trade_store = useWebSocketDataStore("openTrades")
 const closed_trade_store = useWebSocketDataStore("closedTrades")
 const statistics_store = useWebSocketDataStore("statistics")
-const websocket_port = 8120
+const websocket_port = API_PORT
 const hostname = window.location.hostname
 
 const closed_orders = useWebSocket('ws://' + hostname + ':' + websocket_port + '/closed_orders', {

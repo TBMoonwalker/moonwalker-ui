@@ -3,6 +3,7 @@
 </template>
 
 <script setup lang="ts">
+import { API_PORT } from '../config'
 import { ref, watch, reactive } from 'vue'
 import { type DataTableColumns } from 'naive-ui'
 import { useWebSocketDataStore } from '../stores/websocket'
@@ -24,7 +25,7 @@ const pageReactive = reactive({
         return `Total ${itemCount} trades`
       }
     });
-const api_port = 8120
+const api_port = API_PORT
 const hostname = window.location.hostname
 
 const updatePageCount = () => {

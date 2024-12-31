@@ -7,6 +7,7 @@
 </template>
 
 <script setup lang="ts">
+import { API_PORT } from '../config'
 import { ref, watch } from 'vue'
 import { useWebSocketDataStore } from '../stores/websocket'
 import { storeToRefs } from 'pinia'
@@ -23,7 +24,7 @@ chart_data.value = {
     datasets: [{ }]
 }
 
-const api_port = 8120
+const api_port = API_PORT
 const hostname = window.location.hostname
 
 let historic_data = false

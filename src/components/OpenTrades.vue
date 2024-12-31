@@ -3,6 +3,7 @@
 </template>
 
 <script setup lang="ts">
+import { API_PORT } from '../config'
 import { h, ref, watch, onMounted } from 'vue'
 import { type DataTableColumns, NTimeline, NTimelineItem, NDivider, NSlider, NButton, NButtonGroup, useDialog, useMessage, NInput, NFlex, NCard } from 'naive-ui'
 import { useWebSocketDataStore } from '../stores/websocket'
@@ -16,7 +17,7 @@ const open_trades = ref()
 const dialog = useDialog()
 const message = useMessage()
 
-const api_port = 8120
+const api_port = API_PORT
 const hostname = window.location.hostname
 
 
