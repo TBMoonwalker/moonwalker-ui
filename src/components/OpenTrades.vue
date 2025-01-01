@@ -245,7 +245,7 @@ const columns_trades = (): DataTableColumns<RowData> => {
 
                                     // Take profit price line
                                     candlestickSeries.createPriceLine({
-                                        price: rowData.tp_price,
+                                        price: Number(rowData.tp_price),
                                         color: 'orange',
                                         lineWidth: 2,
                                         lineStyle: 0,
