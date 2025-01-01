@@ -1,13 +1,13 @@
 <template>
-        <Bar
-            id="my-chart-id"
-            :options="chart_options"
-            :data="chart_data"
-        />
+    <Bar
+        id="my-chart-id"
+        :options="chart_options"
+        :data="chart_data"
+    />
 </template>
 
 <script setup lang="ts">
-import { API_PORT } from '../config'
+import { MOONWALKER_API_PORT } from '../config'
 import { ref, watch } from 'vue'
 import { useWebSocketDataStore } from '../stores/websocket'
 import { storeToRefs } from 'pinia'
@@ -24,7 +24,7 @@ chart_data.value = {
     datasets: [{ }]
 }
 
-const api_port = API_PORT
+const moonwalker_api_port = MOONWALKER_API_PORT
 const hostname = window.location.hostname
 
 let historic_data = false
@@ -71,7 +71,7 @@ async function get_historic_chart_data() {
     let datasets = []
     let background_colors = []
 
-    historic_chart_data  = await fetch(`http://${hostname}:${api_port}/profit/statistics`).then((response) =>
+    historic_chart_data  = await fetch(`http://${hostname}:${moonwalker_api_port}/profit/statistics`).then((response) =>
             response.json()
         )
     

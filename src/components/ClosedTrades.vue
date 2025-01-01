@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { API_PORT } from '../config'
+import { MOONWALKER_API_PORT } from '../config'
 import { ref, watch, reactive } from 'vue'
 import { type DataTableColumns } from 'naive-ui'
 import { useWebSocketDataStore } from '../stores/websocket'
@@ -25,7 +25,7 @@ const pageReactive = reactive({
         return `Total ${itemCount} trades`
       }
     });
-const api_port = API_PORT
+const moonwalker_api_port = MOONWALKER_API_PORT
 const hostname = window.location.hostname
 
 const updatePageCount = () => {
@@ -40,7 +40,7 @@ const updateData = async (currentPage: number) => {
         paged_closed_trades.value = data.value
     } else {
         pagination = (currentPage -1) * pageReactive.pageSize
-        const data  = await fetch(`http://${hostname}:${api_port}/orders/closed/${pagination}`).then((response) =>
+        const data  = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/closed/${pagination}`).then((response) =>
             response.json()
         )
 
@@ -99,7 +99,7 @@ watch(closed_trade_data.json, async (newData) => {
         closed_trades.value = await convertData(websocket_data)
         
         // Get actual closed orders length to calculate pagination
-        closed_trades_length.value = await fetch(`http://${hostname}:${api_port}/orders/closed/length`).then((response) =>
+        closed_trades_length.value = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/closed/length`).then((response) =>
             response.json()
         )
         updatePageCount()
@@ -157,7 +157,7 @@ const columns_trades = (): DataTableColumns<RowData> => {
             className: 'profit',
         },
         {
-            title: 'Safety Order Count',
+            title: 'SO',
             key: 'so_count',
             align: 'center'
         },
@@ -166,7 +166,7 @@ const columns_trades = (): DataTableColumns<RowData> => {
             key: 'duration'
         },
         {
-            title: 'Close date',
+            title: 'Closed',
             key: 'close_date'
         },
     ]

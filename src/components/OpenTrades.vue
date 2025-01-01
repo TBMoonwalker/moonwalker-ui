@@ -3,12 +3,13 @@
 </template>
 
 <script setup lang="ts">
-import { API_PORT } from '../config'
-import { h, ref, watch, onMounted } from 'vue'
+import { MOONWALKER_API_PORT, MOONLOADER_API_PORT } from '../config'
+import { h, ref, watch } from 'vue'
 import { type DataTableColumns, NTimeline, NTimelineItem, NDivider, NSlider, NButton, NButtonGroup, useDialog, useMessage, NInput, NFlex, NCard } from 'naive-ui'
 import { useWebSocketDataStore } from '../stores/websocket'
 import { storeToRefs } from 'pinia'
 import { isFloat } from '../helpers/validators'
+import { createChart } from 'lightweight-charts'
 
 const open_trade_store = useWebSocketDataStore("openTrades")
 const open_trade_data = storeToRefs(open_trade_store)
@@ -17,9 +18,9 @@ const open_trades = ref()
 const dialog = useDialog()
 const message = useMessage()
 
-const api_port = API_PORT
+const moonwalker_api_port = MOONWALKER_API_PORT
+const moonloader_api_port = MOONLOADER_API_PORT
 const hostname = window.location.hostname
-
 
 watch(open_trade_data.json, async (newData) => {
     if (newData !== undefined) {
@@ -100,7 +101,7 @@ function handle_deal_sell(data: any) {
         negativeText: 'Do not sell',
         onPositiveClick: async () => {
             const [symbol, currency] = data["symbol"].toLowerCase().split("/")
-            const result = await fetch(`http://${hostname}:${api_port}/orders/sell/${symbol+currency}`).then((response) =>
+            const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/sell/${symbol+currency}`).then((response) =>
                 response.json()
             )
             if (result["sell"]) {
@@ -126,7 +127,7 @@ function handle_deal_buy(data: any) {
         negativeText: 'Cancel',
         onPositiveClick: async () => {
             
-            const result = await fetch(`http://${hostname}:${api_port}/orders/buy/${symbol+currency}/${amount}`).then((response) =>
+            const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/buy/${symbol+currency}/${amount}`).then((response) =>
                 response.json()
             )
             if (result["new_so"]) {
@@ -156,11 +157,14 @@ const columns_trades = (): DataTableColumns<RowData> => {
             type: 'expand',
             expandable: (rowData) => rowData.symbol != "",
             renderExpand: (rowData) => {
+                const [symbol, currency] = rowData.symbol.split("/")
+                const chartRef = ref()
+                let chart: any
                 return [
-                    h(NFlex, {}, { default: () => [
+                    h(NFlex, {justify: 'space-around'}, { default: () => [
                         h(NCard, {}, { default: () => 
                             h(NTimeline, {
-                                horizontal: false
+                                horizontal: true
                             }, () => {
                                 let timeline_items: Array<any> = []
                                 // Baseorder
@@ -174,8 +178,7 @@ const columns_trades = (): DataTableColumns<RowData> => {
                                         })
 
                                 // Safety Orders
-                                if (rowData.safetyorder) {
-                                    console.log(rowData.safetyorder)    
+                                if (rowData.safetyorder) {   
                                     rowData.safetyorder.forEach (function (val: any, i: any) {
                                         let timestamp = new Date(Math.trunc(parseFloat(val.timestamp)))
                                         let date = timestamp.toLocaleString()
@@ -188,6 +191,112 @@ const columns_trades = (): DataTableColumns<RowData> => {
                                 })
                                 }
                                 return timeline_items
+                            })
+                        }),
+                        h(NCard, {}, {default: () => 
+                            h('div', {ref: chartRef, style: "height: 400px", 
+                                onVnodeMounted: async () => {
+                                    let end_timestamp = null
+                                    const begin_timestamp = rowData.baseorder.timestamp
+                                    if (rowData.safetyorder) {
+                                        end_timestamp = rowData.safetyorder[rowData.safetyorder.length-1].timestamp
+                                    }
+                                    console.log("Begin timestamp: " + begin_timestamp + ", End timestamp: " + end_timestamp)
+                                    chart = createChart(chartRef.value, {
+                                        autoSize: true,
+                                        layout: {
+                                            background: { color: 'rgb(24, 24, 28)' },
+                                            textColor: '#fff',
+                                        },
+                                        grid: {
+                                            vertLines: { visible: false },
+                                            horzLines: { visible: false },
+                                        },
+                                        timeScale: {
+                                            borderVisible: false,
+                                            timeVisible: true,
+                                        },
+                                        rightPriceScale: {
+                                            borderVisible: false
+                                        },
+                                        handleScroll: false,
+                                        handleScale: false,
+                                    })
+                                    const candlestickSeries = chart.addCandlestickSeries({
+                                        upColor: "rgb(99, 226, 183)",
+                                        borderUpColor: "rgb(99, 226, 183)",
+                                        wickUpColor: "rgb(99, 226, 183)",
+                                        downColor: "rgb(224, 108, 117)",
+                                        borderDownColor: "rgb(224, 108, 117)",
+                                        wickDownColor: "rgb(224, 108, 117)"
+                                    })
+
+                                    // OHLCV data from Moonloader
+                                    const ticker_data = await fetch(`http://${hostname}:${moonloader_api_port}/api/v1/data/ohlcv/${symbol+currency.toUpperCase()}/15min/${begin_timestamp}`).then((response) =>
+                                        response.json()
+                                    )
+                                    candlestickSeries.setData(ticker_data)
+                                    
+                                    let marker_data = []
+                                    let timezone_offset = new Date(Math.trunc(parseFloat(begin_timestamp))).getTimezoneOffset()
+                                    
+                                    let baseorder_datetime = Math.trunc(Number(begin_timestamp) / 1000)
+                                    baseorder_datetime += 60 * Math.abs(timezone_offset)
+                                    // Baseorder marker
+                                    marker_data.push({
+                                        time: baseorder_datetime,
+                                        position: 'belowBar',
+                                        color: '#f68410',
+                                        shape: 'arrowUp',
+                                        text: 'Buy',
+                                    })
+                                    
+                                    // Baseorder price line
+                                    candlestickSeries.createPriceLine({
+                                        price: rowData.baseorder.price,
+                                        color: 'green',
+                                        lineWidth: 2,
+                                        lineStyle: 2,
+                                        axisLabelVisible: true,
+                                        title: 'BO',
+                                    })
+
+                                    if (rowData.safetyorder) {   
+                                        rowData.safetyorder.forEach (function (val: any, i: any) {
+                                            let safetyorder_datetime = Math.trunc(Number(val.timestamp) / 1000)
+                                            safetyorder_datetime += 60 * Math.abs(timezone_offset)
+                                            // Safetyorder marker
+                                            marker_data.push({
+                                                time: safetyorder_datetime,
+                                                position: 'belowBar',
+                                                color: '#f68410',
+                                                shape: 'arrowUp',
+                                                text: 'Buy',
+                                            })
+                                            
+                                            // Safetyorder price line
+                                            candlestickSeries.createPriceLine({
+                                                price: val.price,
+                                                color: 'green',
+                                                lineWidth: 2,
+                                                lineStyle: 2,
+                                                axisLabelVisible: true,
+                                                title: 'SO' + i+1,
+                                            })
+
+                                        })
+                                    }
+
+                                    const candlestickMarkers = marker_data
+                                    candlestickSeries.setMarkers(candlestickMarkers)
+                                    chart.timeScale().fitContent()
+                                },
+                                onVnodeUnmounted: () => {
+                                    if (chart) {
+                                        chart.remove();
+                                        chart = null;
+                                    }
+                                },    
                             })
                         })
                     ]
@@ -236,7 +345,7 @@ const columns_trades = (): DataTableColumns<RowData> => {
             }
         },
         {
-            title: 'AP / TP',
+            title: 'TP',
             key: 'tp_price',
             render: (rowData) => {
                 const avg_price = rowData.avg_price
@@ -252,13 +361,13 @@ const columns_trades = (): DataTableColumns<RowData> => {
                     fillColor.value = 'rgb(99, 226, 183)'
                 }
                 return [
-                    h(NSlider, { value: [current_price, avg_price], range: true, marks: marks, min: min_price, max: max_price, disabled: true, themeOverrides: { fillColor: fillColor.value, handleSize: '8px', opacityDisabled: '1' } }),
+                    h(NSlider, { value: [current_price, avg_price], range: true, min: min_price, max: max_price, disabled: true, themeOverrides: { fillColor: fillColor.value, handleSize: '8px', opacityDisabled: '1' } }),
                 ]
             },
             align: 'center'
         },
         {
-            title: 'Safety Order Count',
+            title: 'SO',
             key: 'so_count',
             align: 'center'
         },
@@ -277,7 +386,7 @@ const columns_trades = (): DataTableColumns<RowData> => {
             align: 'center'
         },
         {
-            title: 'Open Date',
+            title: 'Opened',
             key: 'open_date',
             align: 'center'
         },
