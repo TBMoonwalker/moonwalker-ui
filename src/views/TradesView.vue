@@ -3,7 +3,6 @@ import OpenTrades from '../components/OpenTrades.vue'
 import ClosedTrades from '../components/ClosedTrades.vue'
 import Statistics from '@/components/Statistics.vue'
 import Charts from '@/components/Charts.vue'
-import TVChart from '@/components/TVChart.vue'
 </script>
 
 <template>
