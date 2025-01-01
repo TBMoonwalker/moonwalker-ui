@@ -31,4 +31,4 @@ test-results/
 playwright-report/
 
 # Config
-config.ts
+src/config.ts

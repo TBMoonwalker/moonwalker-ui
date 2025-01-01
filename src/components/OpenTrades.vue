@@ -169,6 +169,7 @@ const columns_trades = (): DataTableColumns<RowData> => {
                                 let timeline_items: Array<any> = []
                                 // Baseorder
                                 let timestamp = new Date(Math.trunc(parseFloat(rowData.baseorder.timestamp)))
+                                console.log(timestamp)
                                 let date = timestamp.toLocaleString()
                                 timeline_items[0] = h(NTimelineItem, {
                                             title: "Baseorder",
@@ -231,17 +232,30 @@ const columns_trades = (): DataTableColumns<RowData> => {
                                         wickDownColor: "rgb(224, 108, 117)"
                                     })
 
+                                    // Get offset from timezone
+                                    let timezone_offset = Math.abs(new Date(Math.trunc(parseFloat(begin_timestamp))).getTimezoneOffset())
+
                                     // OHLCV data from Moonloader
-                                    const ticker_data = await fetch(`http://${hostname}:${moonloader_api_port}/api/v1/data/ohlcv/${symbol+currency.toUpperCase()}/15min/${begin_timestamp}`).then((response) =>
+                                    const ticker_data = await fetch(`http://${hostname}:${moonloader_api_port}/api/v1/data/ohlcv/${symbol+currency.toUpperCase()}/15min/${begin_timestamp}/${timezone_offset}`).then((response) =>
                                         response.json()
                                     )
                                     candlestickSeries.setData(ticker_data)
                                     
                                     let marker_data = []
-                                    let timezone_offset = new Date(Math.trunc(parseFloat(begin_timestamp))).getTimezoneOffset()
+
+                                    // Take profit price line
+                                    candlestickSeries.createPriceLine({
+                                        price: rowData.tp_price,
+                                        color: 'orange',
+                                        lineWidth: 2,
+                                        lineStyle: 0,
+                                        axisLabelVisible: true,
+                                        title: 'TP',
+                                    })
+                                    
                                     
                                     let baseorder_datetime = Math.trunc(Number(begin_timestamp) / 1000)
-                                    baseorder_datetime += 60 * Math.abs(timezone_offset)
+                                    baseorder_datetime += 60 * timezone_offset
                                     // Baseorder marker
                                     marker_data.push({
                                         time: baseorder_datetime,
