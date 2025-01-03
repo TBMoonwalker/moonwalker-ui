@@ -255,11 +255,11 @@ const columns_trades = (): DataTableColumns<RowData> => {
 
                                     // Correct marker timestamp shift
                                     let intervals = {
-                                        '15_minutes': (1800/2)
+                                        '15_minutes': (3600/2)
                                     }
                                     let seconds = intervals['15_minutes']
                                     
-                                    let baseorder_datetime = Math.trunc(Number(begin_timestamp) / 1000) - Math.trunc((Number(begin_timestamp) % seconds) / 1000)
+                                    let baseorder_datetime = (Math.trunc(Number(begin_timestamp) / 1000) % seconds)
                                     baseorder_datetime += 60 * timezone_offset
                                     // Baseorder marker
                                     marker_data.push({
@@ -282,7 +282,7 @@ const columns_trades = (): DataTableColumns<RowData> => {
 
                                     if (rowData.safetyorder) {   
                                         rowData.safetyorder.forEach (function (val: any, i: any) {
-                                            let safetyorder_datetime = Math.trunc(Number(val.timestamp) / 1000) - Math.trunc((Number(val.timestamp) % seconds) / 1000)
+                                            let safetyorder_datetime = (Math.trunc(Number(val.timestamp) / 1000) % seconds)
                                             safetyorder_datetime += 60 * Math.abs(timezone_offset)
                                             // Safetyorder marker
                                             marker_data.push({
