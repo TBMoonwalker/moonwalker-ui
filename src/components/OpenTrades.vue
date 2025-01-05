@@ -9,6 +9,7 @@ import { type DataTableColumns, NTimeline, NTimelineItem, NDivider, NSlider, NBu
 import { useWebSocketDataStore } from '../stores/websocket'
 import { storeToRefs } from 'pinia'
 import { isFloat } from '../helpers/validators'
+import { timezoneOffset } from '../helpers/timezone'
 import { createChart } from 'lightweight-charts'
 
 const open_trade_store = useWebSocketDataStore("openTrades")
@@ -120,7 +121,7 @@ function handle_deal_sell(data: any) {
 function handle_deal_buy(data: any) {
     var amount = ""
     const [symbol, currency] = data["symbol"].toLowerCase().split("/")
-    dialog.warning({
+    dialog.info({
         title: 'Adding funds',
         content: () => h(NInput, {onUpdateValue: (value) => {amount = value}, allowInput: (value: string) => !value || /^\d+$/.test(value), placeholder: "Add amount in " + currency.toUpperCase()}),
         positiveText: 'Add funds',
@@ -134,6 +135,30 @@ function handle_deal_buy(data: any) {
                 message.success('Added ' + amount + ' ' + currency.toUpperCase() + ' for ' + symbol.toUpperCase())
             } else {
                 message.error('Failed to add ' + amount + ' ' + currency.toUpperCase() + ' for ' + symbol.toUpperCase())
+            }
+            
+        },
+        onNegativeClick: () => {
+            message.error('Cancelled')
+        }
+    })
+}
+
+function handle_deal_stop(data: any) {
+    dialog.warning({
+        title: 'Stopping deal',
+        content: 'Do you like to stop the deal for ' + data["symbol"] + ' ?',
+        positiveText: 'Stop',
+        negativeText: 'Do not stop',
+        onPositiveClick: async () => {
+            const [symbol, currency] = data["symbol"].toLowerCase().split("/")
+            const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/stop/${symbol+currency}`).then((response) =>
+                response.json()
+            )
+            if (result["sell"]) {
+                message.success('Stopped ' + data["symbol"] + ' Please trade it manually on your exchange')
+            } else {
+                message.error('Failed to stop' + data["symbol"] + ' - please check your logs')
             }
             
         },
@@ -232,11 +257,8 @@ const columns_trades = (): DataTableColumns<RowData> => {
                                         wickDownColor: "rgb(224, 108, 117)"
                                     })
 
-                                    // Get offset from timezone
-                                    let timezone_offset = Math.abs(new Date(Math.trunc(parseFloat(begin_timestamp))).getTimezoneOffset())
-
                                     // OHLCV data from Moonloader
-                                    const ticker_data = await fetch(`http://${hostname}:${moonloader_api_port}/api/v1/data/ohlcv/${symbol+currency.toUpperCase()}/15min/${begin_timestamp}/${timezone_offset}`).then((response) =>
+                                    const ticker_data = await fetch(`http://${hostname}:${moonloader_api_port}/api/v1/data/ohlcv/${symbol+currency.toUpperCase()}/15min/${begin_timestamp}/${timezoneOffset()}`).then((response) =>
                                         response.json()
                                     )
                                     candlestickSeries.setData(ticker_data)
@@ -260,7 +282,7 @@ const columns_trades = (): DataTableColumns<RowData> => {
                                     let seconds = intervals['15_minutes']
                                     
                                     let baseorder_datetime = Math.trunc(Number(begin_timestamp) / 1000) - (Math.trunc(Number(begin_timestamp) / 1000) % seconds)
-                                    baseorder_datetime += 60 * timezone_offset
+                                    baseorder_datetime += 60 * timezoneOffset()
                                     // Baseorder marker
                                     marker_data.push({
                                         time: baseorder_datetime,
@@ -283,7 +305,7 @@ const columns_trades = (): DataTableColumns<RowData> => {
                                     if (rowData.safetyorder) {   
                                         rowData.safetyorder.forEach (function (val: any, i: any) {
                                             let safetyorder_datetime = Math.trunc(Number(val.timestamp) / 1000) - (Math.trunc(Number(val.timestamp) / 1000) % seconds)
-                                            safetyorder_datetime += 60 * timezone_offset
+                                            safetyorder_datetime += 60 * timezoneOffset()
                                             // Safetyorder marker
                                             marker_data.push({
                                                 time: safetyorder_datetime,
@@ -397,7 +419,8 @@ const columns_trades = (): DataTableColumns<RowData> => {
                 return [
                     h(NButtonGroup, {size: 'small'}, { default: () => [
                         h(NButton, {primary: true, size: 'small', onClick: () => handle_deal_sell(rowData)}, { default: () => 'Sell'}),
-                        h(NButton, {primary: true, size: 'small', onClick: () => handle_deal_buy(rowData)}, { default: () => 'Buy'})
+                        h(NButton, {primary: true, size: 'small', onClick: () => handle_deal_buy(rowData)}, { default: () => 'Buy'}),
+                        h(NButton, {primary: true, size: 'small', onClick: () => handle_deal_stop(rowData)}, { default: () => 'Stop'})
                     ]
                     })
                 ]

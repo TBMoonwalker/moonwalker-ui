@@ -67,10 +67,6 @@ watch(statistics_data.json, async (newData) => {
 }, { immediate: true })
 
 async function get_historic_chart_data() {
-    let labels = []
-    let datasets = []
-    let background_colors = []
-
     historic_chart_data  = await fetch(`http://${hostname}:${moonwalker_api_port}/profit/statistics`).then((response) =>
             response.json()
         )
@@ -81,7 +77,7 @@ function chart_classes(data: any) {
     if (Math.sign(data) >= 0) {
         return 'rgb(99, 226, 183)'
     } else {
-        return 'rgb(99, 226, 183)'
+        return 'rgb(224, 108, 117)'
     }
 }
 
