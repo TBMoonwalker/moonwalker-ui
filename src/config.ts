@@ -1,2 +1,2 @@
-export const MOONWALKER_API_PORT = 8120
-export const MOONLOADER_API_PORT = 9130
+export const MOONWALKER_API_PORT = 8150
+export const MOONLOADER_API_PORT = 9150

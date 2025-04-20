@@ -245,7 +245,7 @@ const columns_trades = (): DataTableColumns<RowData> => {
                                         rightPriceScale: {
                                             borderVisible: false
                                         },
-                                        handleScroll: false,
+                                        handleScroll: true,
                                         handleScale: false,
                                     })
                                     const candlestickSeries = chart.addCandlestickSeries({
