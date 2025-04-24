@@ -63,10 +63,9 @@ async function convertData(data: any) {
         convert_data.value[i].profit_percent = val.profit_percent.toFixed(2)
         convert_data.value[i].amount = val.amount.toFixed(amount_length)
         convert_data.value[i].key = val.id
-        //let timestamp: number = Date.parse(val.close_date)
-        //let date = convertTime(new Date(timestamp), timezoneOffset())
-        //convert_data.value[i].close_date = date.toLocaleString()
-        convert_data.value[i].close_date = val.close_date
+        let timestamp: number = Date.parse(val.close_date)
+        let date = convertTime(new Date(timestamp), null)
+        convert_data.value[i].close_date = date.toLocaleString()
 
         if (isJsonString(convert_data.value[i].duration)) {
             const duration = JSON.parse(convert_data.value[i].duration)
