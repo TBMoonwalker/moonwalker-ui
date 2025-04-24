@@ -65,6 +65,7 @@ watch(open_trade_data.json, async (newData) => {
             let date = new Date(Math.trunc(parseFloat(val.open_date)));
             open_trades.value[i].open_date = date.toLocaleString()
             open_trades.value[i].safetyorder = val.safetyorders
+            open_trades.value[i].precision = current_length
 
         })
     }
@@ -84,6 +85,7 @@ type RowData = {
     open_date: string
     baseorder: OrderData
     safetyorder: Array<OrderData>
+    precision: number
 }
 
 type OrderData = {
@@ -259,7 +261,12 @@ const columns_trades = (): DataTableColumns<RowData> => {
                                                 wickUpColor: "rgb(99, 226, 183)",
                                                 downColor: "rgb(224, 108, 117)",
                                                 borderDownColor: "rgb(224, 108, 117)",
-                                                wickDownColor: "rgb(224, 108, 117)"
+                                                wickDownColor: "rgb(224, 108, 117)",
+                                                priceFormat: {
+                                                    type: 'price',
+                                                    precision: rowData.precision,
+                                                    minMove: 0.00000001,
+                                                },
                                             })
 
                                             // OHLCV data from Moonloader
