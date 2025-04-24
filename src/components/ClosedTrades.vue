@@ -10,7 +10,6 @@ import { type DataTableColumns } from 'naive-ui'
 import { useWebSocketDataStore } from '../stores/websocket'
 import { storeToRefs } from 'pinia'
 import { isFloat, isJsonString } from '../helpers/validators'
-import { timezoneOffset, convertTime } from '../helpers/timezone'
 const closed_trade_store = useWebSocketDataStore("closedTrades")
 const closed_trade_data = storeToRefs(closed_trade_store)
 // Only fetch the 10 actual closed trades with websocket - other ones get with direct api call!!!
@@ -64,7 +63,7 @@ async function convertData(data: any) {
         convert_data.value[i].amount = val.amount.toFixed(amount_length)
         convert_data.value[i].key = val.id
         let timestamp: number = Date.parse(val.close_date)
-        let date = convertTime(new Date(timestamp), null)
+        let date = new Date(timestamp)
         convert_data.value[i].close_date = date.toLocaleString()
 
         if (isJsonString(convert_data.value[i].duration)) {
