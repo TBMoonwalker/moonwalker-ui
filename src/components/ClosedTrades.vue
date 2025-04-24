@@ -1,5 +1,6 @@
 <template>
-    <n-data-table remote ref="table" :columns="columns_closed_trades" :data="paged_closed_trades" :row-class-name="row_classes" :pagination="pageReactive" @update:page="handlePageChange"/>
+    <n-data-table remote ref="table" :columns="columns_closed_trades" :data="paged_closed_trades"
+        :row-class-name="row_classes" :pagination="pageReactive" @update:page="handlePageChange" />
 </template>
 
 <script setup lang="ts">
@@ -17,21 +18,21 @@ const closed_trades = ref()
 const closed_trades_length = ref()
 const paged_closed_trades = ref()
 const pageReactive = reactive({
-      page: 1,
-      pageCount: 1,
-      pageSize: 10,
-      pageSlot: 5,
-      prefix({ itemCount }) {
+    page: 1,
+    pageCount: 1,
+    pageSize: 10,
+    pageSlot: 5,
+    prefix({ itemCount }) {
         return `Total ${itemCount} trades`
-      }
-    });
+    }
+});
 const moonwalker_api_port = MOONWALKER_API_PORT
 const hostname = window.location.hostname
 
 const updatePageCount = () => {
     pageReactive.pageCount = Math.ceil(closed_trades_length.value / pageReactive.pageSize)
     pageReactive.itemCount = closed_trades_length.value
-    }
+}
 
 const updateData = async (currentPage: number) => {
     let pagination = 0
@@ -39,14 +40,14 @@ const updateData = async (currentPage: number) => {
         const data = closed_trades
         paged_closed_trades.value = data.value
     } else {
-        pagination = (currentPage -1) * pageReactive.pageSize
-        const data  = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/closed/${pagination}`).then((response) =>
+        pagination = (currentPage - 1) * pageReactive.pageSize
+        const data = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/closed/${pagination}`).then((response) =>
             response.json()
         )
 
         paged_closed_trades.value = await convertData(data)
     }
-    
+
 }
 
 async function convertData(data: any) {
@@ -62,9 +63,10 @@ async function convertData(data: any) {
         convert_data.value[i].profit_percent = val.profit_percent.toFixed(2)
         convert_data.value[i].amount = val.amount.toFixed(amount_length)
         convert_data.value[i].key = val.id
-        let timestamp: number = Date.parse(val.close_date);
-        let date = convertTime(new Date(timestamp), timezoneOffset())
-        convert_data.value[i].close_date = date.toLocaleString()
+        //let timestamp: number = Date.parse(val.close_date)
+        //let date = convertTime(new Date(timestamp), timezoneOffset())
+        //convert_data.value[i].close_date = date.toLocaleString()
+        convert_data.value[i].close_date = val.close_date
 
         if (isJsonString(convert_data.value[i].duration)) {
             const duration = JSON.parse(convert_data.value[i].duration)
@@ -97,7 +99,7 @@ watch(closed_trade_data.json, async (newData) => {
         const websocket_data: RowData[] = JSON.parse(newData)
         closed_trades.value = websocket_data
         closed_trades.value = await convertData(websocket_data)
-        
+
         // Get actual closed orders length to calculate pagination
         closed_trades_length.value = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/closed/length`).then((response) =>
             response.json()
@@ -188,7 +190,4 @@ const columns_closed_trades = columns_trades()
 .n-data-table {
     width: 98%;
 }
-
 </style>
-
-

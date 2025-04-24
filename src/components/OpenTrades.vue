@@ -1,5 +1,6 @@
 <template>
-    <n-data-table size="small" remote ref="table" :columns="columns_open_trades" :data="open_trades" :row-class-name="row_classes" />
+    <n-data-table size="small" remote ref="table" :columns="columns_open_trades" :data="open_trades"
+        :row-class-name="row_classes" />
 </template>
 
 <script setup lang="ts">
@@ -64,7 +65,7 @@ watch(open_trade_data.json, async (newData) => {
             let date = new Date(Math.trunc(parseFloat(val.open_date)));
             open_trades.value[i].open_date = date.toLocaleString()
             open_trades.value[i].safetyorder = val.safetyorders
-            
+
         })
     }
 }, { immediate: true })
@@ -102,7 +103,7 @@ function handle_deal_sell(data: any) {
         negativeText: 'Do not sell',
         onPositiveClick: async () => {
             const [symbol, currency] = data["symbol"].toLowerCase().split("/")
-            const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/sell/${symbol+currency}`).then((response) =>
+            const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/sell/${symbol + currency}`).then((response) =>
                 response.json()
             )
             if (result["sell"]) {
@@ -110,7 +111,7 @@ function handle_deal_sell(data: any) {
             } else {
                 message.error('Failed to sell' + data["amount"] + ' ' + data["symbol"] + ' - please check your logs')
             }
-            
+
         },
         onNegativeClick: () => {
             message.error('Cancelled')
@@ -123,12 +124,12 @@ function handle_deal_buy(data: any) {
     const [symbol, currency] = data["symbol"].toLowerCase().split("/")
     dialog.info({
         title: 'Adding funds',
-        content: () => h(NInput, {onUpdateValue: (value) => {amount = value}, allowInput: (value: string) => !value || /^\d+$/.test(value), placeholder: "Add amount in " + currency.toUpperCase()}),
+        content: () => h(NInput, { onUpdateValue: (value) => { amount = value }, allowInput: (value: string) => !value || /^\d+$/.test(value), placeholder: "Add amount in " + currency.toUpperCase() }),
         positiveText: 'Add funds',
         negativeText: 'Cancel',
         onPositiveClick: async () => {
-            
-            const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/buy/${symbol+currency}/${amount}`).then((response) =>
+
+            const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/buy/${symbol + currency}/${amount}`).then((response) =>
                 response.json()
             )
             if (result["new_so"]) {
@@ -136,7 +137,7 @@ function handle_deal_buy(data: any) {
             } else {
                 message.error('Failed to add ' + amount + ' ' + currency.toUpperCase() + ' for ' + symbol.toUpperCase())
             }
-            
+
         },
         onNegativeClick: () => {
             message.error('Cancelled')
@@ -152,7 +153,7 @@ function handle_deal_stop(data: any) {
         negativeText: 'Do not stop',
         onPositiveClick: async () => {
             const [symbol, currency] = data["symbol"].toLowerCase().split("/")
-            const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/stop/${symbol+currency}`).then((response) =>
+            const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/stop/${symbol + currency}`).then((response) =>
                 response.json()
             )
             if (result["sell"]) {
@@ -160,7 +161,7 @@ function handle_deal_stop(data: any) {
             } else {
                 message.error('Failed to stop' + data["symbol"] + ' - please check your logs')
             }
-            
+
         },
         onNegativeClick: () => {
             message.error('Cancelled')
@@ -186,163 +187,168 @@ const columns_trades = (): DataTableColumns<RowData> => {
                 const chartRef = ref()
                 let chart: any
                 return [
-                    h(NFlex, {justify: 'space-around'}, { default: () => [
-                        h(NCard, {}, { default: () => 
-                            h(NTimeline, {
-                                horizontal: true
-                            }, () => {
-                                let timeline_items: Array<any> = []
-                                // Baseorder
-                                let timestamp = new Date(Math.trunc(parseFloat(rowData.baseorder.timestamp)))
-                                console.log(timestamp)
-                                let date = timestamp.toLocaleString()
-                                timeline_items[0] = h(NTimelineItem, {
+                    h(NFlex, { justify: 'space-around' }, {
+                        default: () => [
+                            h(NCard, {}, {
+                                default: () =>
+                                    h(NTimeline, {
+                                        horizontal: true
+                                    }, () => {
+                                        let timeline_items: Array<any> = []
+                                        // Baseorder
+                                        let timestamp = new Date(Math.trunc(parseFloat(rowData.baseorder.timestamp)))
+                                        //console.log(timestamp)
+                                        let date = timestamp.toLocaleString()
+                                        timeline_items[0] = h(NTimelineItem, {
                                             title: "Baseorder",
                                             content: "Order size: " + rowData.baseorder.ordersize + " | Amount: " + rowData.baseorder.amount + " | Price: " + rowData.baseorder.price,
                                             type: 'info',
                                             time: date,
                                         })
 
-                                // Safety Orders
-                                if (rowData.safetyorder) {   
-                                    rowData.safetyorder.forEach (function (val: any, i: any) {
-                                        let timestamp = new Date(Math.trunc(parseFloat(val.timestamp)))
-                                        let date = timestamp.toLocaleString()
-                                        timeline_items[(i + 1)] = h(NTimelineItem, {
-                                            title: "Safetyorder " + (i + 1),
-                                            content: "Order size: " + val.ordersize + " | Amount: " + val.amount + " | Price: " + val.price + " | Percentage: " + val.so_percentage,
-                                            type: 'success',
-                                            time: date,
-                                        })
-                                })
-                                }
-                                return timeline_items
-                            })
-                        }),
-                        h(NCard, {}, {default: () => 
-                            h('div', {ref: chartRef, style: "height: 400px", 
-                                onVnodeMounted: async () => {
-                                    let end_timestamp = null
-                                    const begin_timestamp = rowData.baseorder.timestamp
-                                    if (rowData.safetyorder) {
-                                        end_timestamp = rowData.safetyorder[rowData.safetyorder.length-1].timestamp
-                                    }
-                                    console.log("Begin timestamp: " + begin_timestamp + ", End timestamp: " + end_timestamp)
-                                    chart = createChart(chartRef.value, {
-                                        autoSize: true,
-                                        layout: {
-                                            background: { color: 'rgb(24, 24, 28)' },
-                                            textColor: '#fff',
-                                        },
-                                        grid: {
-                                            vertLines: { visible: false },
-                                            horzLines: { visible: false },
-                                        },
-                                        timeScale: {
-                                            borderVisible: false,
-                                            timeVisible: true,
-                                        },
-                                        rightPriceScale: {
-                                            borderVisible: false
-                                        },
-                                        handleScroll: true,
-                                        handleScale: false,
+                                        // Safety Orders
+                                        if (rowData.safetyorder) {
+                                            rowData.safetyorder.forEach(function (val: any, i: any) {
+                                                let timestamp = new Date(Math.trunc(parseFloat(val.timestamp)))
+                                                let date = timestamp.toLocaleString()
+                                                timeline_items[(i + 1)] = h(NTimelineItem, {
+                                                    title: "Safetyorder " + (i + 1),
+                                                    content: "Order size: " + val.ordersize + " | Amount: " + val.amount + " | Price: " + val.price + " | Percentage: " + val.so_percentage,
+                                                    type: 'success',
+                                                    time: date,
+                                                })
+                                            })
+                                        }
+                                        return timeline_items
                                     })
-                                    const candlestickSeries = chart.addCandlestickSeries({
-                                        upColor: "rgb(99, 226, 183)",
-                                        borderUpColor: "rgb(99, 226, 183)",
-                                        wickUpColor: "rgb(99, 226, 183)",
-                                        downColor: "rgb(224, 108, 117)",
-                                        borderDownColor: "rgb(224, 108, 117)",
-                                        wickDownColor: "rgb(224, 108, 117)"
-                                    })
+                            }),
+                            h(NCard, {}, {
+                                default: () =>
+                                    h('div', {
+                                        ref: chartRef, style: "height: 400px",
+                                        onVnodeMounted: async () => {
+                                            let end_timestamp = null
+                                            const begin_timestamp = rowData.baseorder.timestamp
+                                            if (rowData.safetyorder) {
+                                                end_timestamp = rowData.safetyorder[rowData.safetyorder.length - 1].timestamp
+                                            }
+                                            //console.log("Begin timestamp: " + begin_timestamp + ", End timestamp: " + end_timestamp)
+                                            chart = createChart(chartRef.value, {
+                                                autoSize: true,
+                                                layout: {
+                                                    background: { color: 'rgb(24, 24, 28)' },
+                                                    textColor: '#fff',
+                                                },
+                                                grid: {
+                                                    vertLines: { visible: false },
+                                                    horzLines: { visible: false },
+                                                },
+                                                timeScale: {
+                                                    borderVisible: false,
+                                                    timeVisible: true,
+                                                },
+                                                rightPriceScale: {
+                                                    borderVisible: false
+                                                },
+                                                handleScroll: true,
+                                                handleScale: false,
+                                            })
+                                            const candlestickSeries = chart.addCandlestickSeries({
+                                                upColor: "rgb(99, 226, 183)",
+                                                borderUpColor: "rgb(99, 226, 183)",
+                                                wickUpColor: "rgb(99, 226, 183)",
+                                                downColor: "rgb(224, 108, 117)",
+                                                borderDownColor: "rgb(224, 108, 117)",
+                                                wickDownColor: "rgb(224, 108, 117)"
+                                            })
 
-                                    // OHLCV data from Moonloader
-                                    const ticker_data = await fetch(`http://${hostname}:${moonloader_api_port}/api/v1/data/ohlcv/${symbol+currency.toUpperCase()}/15min/${begin_timestamp}/${timezoneOffset()}`).then((response) =>
-                                        response.json()
-                                    )
-                                    candlestickSeries.setData(ticker_data)
-                                    
-                                    let marker_data = []
+                                            // OHLCV data from Moonloader
+                                            const ticker_data = await fetch(`http://${hostname}:${moonloader_api_port}/api/v1/data/ohlcv/${symbol + currency.toUpperCase()}/15min/${begin_timestamp}/${timezoneOffset()}`).then((response) =>
+                                                response.json()
+                                            )
+                                            candlestickSeries.setData(ticker_data)
 
-                                    // Take profit price line
-                                    candlestickSeries.createPriceLine({
-                                        price: Number(rowData.tp_price),
-                                        color: 'orange',
-                                        lineWidth: 2,
-                                        lineStyle: 0,
-                                        axisLabelVisible: true,
-                                        title: 'TP',
-                                    })
+                                            let marker_data = []
 
-                                    // Correct marker timestamp shift
-                                    let intervals = {
-                                        '15_minutes': (3600/2)
-                                    }
-                                    let seconds = intervals['15_minutes']
-                                    
-                                    let baseorder_datetime = Math.trunc(Number(begin_timestamp) / 1000) - (Math.trunc(Number(begin_timestamp) / 1000) % seconds)
-                                    baseorder_datetime += 60 * timezoneOffset()
-                                    // Baseorder marker
-                                    marker_data.push({
-                                        time: baseorder_datetime,
-                                        position: 'belowBar',
-                                        color: '#f68410',
-                                        shape: 'arrowUp',
-                                        text: 'Buy',
-                                    })
-                                    
-                                    // Baseorder price line
-                                    candlestickSeries.createPriceLine({
-                                        price: rowData.baseorder.price,
-                                        color: 'green',
-                                        lineWidth: 2,
-                                        lineStyle: 2,
-                                        axisLabelVisible: true,
-                                        title: 'BO',
-                                    })
+                                            // Take profit price line
+                                            candlestickSeries.createPriceLine({
+                                                price: Number(rowData.tp_price),
+                                                color: 'orange',
+                                                lineWidth: 2,
+                                                lineStyle: 0,
+                                                axisLabelVisible: true,
+                                                title: 'TP'
+                                            })
 
-                                    if (rowData.safetyorder) {   
-                                        rowData.safetyorder.forEach (function (val: any, i: any) {
-                                            let safetyorder_datetime = Math.trunc(Number(val.timestamp) / 1000) - (Math.trunc(Number(val.timestamp) / 1000) % seconds)
-                                            safetyorder_datetime += 60 * timezoneOffset()
-                                            // Safetyorder marker
+                                            // Correct marker timestamp shift
+                                            let intervals = {
+                                                '15_minutes': (3600 / 2)
+                                            }
+                                            let seconds = intervals['15_minutes']
+
+                                            let baseorder_datetime = Math.trunc(Number(begin_timestamp) / 1000) - (Math.trunc(Number(begin_timestamp) / 1000) % seconds)
+                                            baseorder_datetime += 60 * timezoneOffset()
+                                            // Baseorder marker
                                             marker_data.push({
-                                                time: safetyorder_datetime,
+                                                time: baseorder_datetime,
                                                 position: 'belowBar',
                                                 color: '#f68410',
                                                 shape: 'arrowUp',
                                                 text: 'Buy',
                                             })
-                                            
-                                            // Safetyorder price line
+
+                                            // Baseorder price line
                                             candlestickSeries.createPriceLine({
-                                                price: val.price,
+                                                price: rowData.baseorder.price,
                                                 color: 'green',
                                                 lineWidth: 2,
                                                 lineStyle: 2,
                                                 axisLabelVisible: true,
-                                                title: 'SO' + (i + 1),
+                                                title: 'BO',
                                             })
 
-                                        })
-                                    }
+                                            if (rowData.safetyorder) {
+                                                rowData.safetyorder.forEach(function (val: any, i: any) {
+                                                    let safetyorder_datetime = Math.trunc(Number(val.timestamp) / 1000) - (Math.trunc(Number(val.timestamp) / 1000) % seconds)
+                                                    safetyorder_datetime += 60 * timezoneOffset()
+                                                    // Safetyorder marker
+                                                    marker_data.push({
+                                                        time: safetyorder_datetime,
+                                                        position: 'belowBar',
+                                                        color: '#f68410',
+                                                        shape: 'arrowUp',
+                                                        text: 'Buy',
+                                                    })
 
-                                    const candlestickMarkers = marker_data
-                                    candlestickSeries.setMarkers(candlestickMarkers)
-                                    chart.timeScale().fitContent()
-                                },
-                                onVnodeUnmounted: () => {
-                                    if (chart) {
-                                        chart.remove();
-                                        chart = null;
-                                    }
-                                },    
+                                                    // Safetyorder price line
+                                                    candlestickSeries.createPriceLine({
+                                                        price: val.price,
+                                                        color: 'green',
+                                                        lineWidth: 2,
+                                                        lineStyle: 2,
+                                                        axisLabelVisible: true,
+                                                        title: 'SO' + (i + 1),
+                                                    })
+
+                                                })
+                                            }
+
+                                            const candlestickMarkers = marker_data
+                                            candlestickSeries.setMarkers(candlestickMarkers)
+
+                                            chart.timeScale().fitContent()
+                                        },
+                                        onVnodeUnmounted: () => {
+                                            if (chart) {
+                                                chart.remove();
+                                                chart = null;
+                                            }
+                                        },
+                                    })
                             })
-                        })
-                    ]
-                    
-                })]
+                        ]
+
+                    })]
             }
         },
         {
@@ -417,11 +423,12 @@ const columns_trades = (): DataTableColumns<RowData> => {
             key: 'action',
             render: (rowData) => {
                 return [
-                    h(NButtonGroup, {size: 'small'}, { default: () => [
-                        h(NButton, {primary: true, size: 'small', onClick: () => handle_deal_sell(rowData)}, { default: () => 'Sell'}),
-                        h(NButton, {primary: true, size: 'small', onClick: () => handle_deal_buy(rowData)}, { default: () => 'Buy'}),
-                        h(NButton, {primary: true, size: 'small', onClick: () => handle_deal_stop(rowData)}, { default: () => 'Stop'})
-                    ]
+                    h(NButtonGroup, { size: 'small' }, {
+                        default: () => [
+                            h(NButton, { primary: true, size: 'small', onClick: () => handle_deal_sell(rowData) }, { default: () => 'Sell' }),
+                            h(NButton, { primary: true, size: 'small', onClick: () => handle_deal_buy(rowData) }, { default: () => 'Buy' }),
+                            h(NButton, { primary: true, size: 'small', onClick: () => handle_deal_stop(rowData) }, { default: () => 'Stop' })
+                        ]
                     })
                 ]
             },
@@ -452,5 +459,3 @@ const columns_open_trades = columns_trades()
     width: 97%;
 }
 </style>
-
-
