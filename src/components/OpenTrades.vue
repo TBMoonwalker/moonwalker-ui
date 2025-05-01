@@ -105,7 +105,7 @@ function handle_deal_sell(data: any) {
         negativeText: 'Do not sell',
         onPositiveClick: async () => {
             const [symbol, currency] = data["symbol"].toLowerCase().split("/")
-            const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/sell/${symbol + currency}`).then((response) =>
+            const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/sell/${symbol + "-" + currency}`).then((response) =>
                 response.json()
             )
             if (result["sell"]) {
@@ -131,7 +131,7 @@ function handle_deal_buy(data: any) {
         negativeText: 'Cancel',
         onPositiveClick: async () => {
 
-            const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/buy/${symbol + currency}/${amount}`).then((response) =>
+            const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/buy/${symbol + "-" + currency}/${amount}`).then((response) =>
                 response.json()
             )
             if (result["new_so"]) {
@@ -155,10 +155,10 @@ function handle_deal_stop(data: any) {
         negativeText: 'Do not stop',
         onPositiveClick: async () => {
             const [symbol, currency] = data["symbol"].toLowerCase().split("/")
-            const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/stop/${symbol + currency}`).then((response) =>
+            const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/stop/${symbol + "-" + currency}`).then((response) =>
                 response.json()
             )
-            if (result["sell"]) {
+            if (result["stop"]) {
                 message.success('Stopped ' + data["symbol"] + ' Please trade it manually on your exchange')
             } else {
                 message.error('Failed to stop' + data["symbol"] + ' - please check your logs')

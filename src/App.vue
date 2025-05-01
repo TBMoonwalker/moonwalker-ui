@@ -17,15 +17,15 @@ const statistics_store = useWebSocketDataStore("statistics")
 const websocket_port = MOONWALKER_API_PORT
 const hostname = window.location.hostname
 
-const closed_orders = useWebSocket('ws://' + hostname + ':' + websocket_port + '/closed_orders', {
+const closed_orders = useWebSocket('ws://' + hostname + ':' + websocket_port + '/trades/closed', {
   autoReconnect: true,
 })
 
-const open_orders = useWebSocket('ws://' + hostname + ':' + websocket_port + '/open_orders', {
+const open_orders = useWebSocket('ws://' + hostname + ':' + websocket_port + '/trades/open', {
   autoReconnect: true,
 })
 
-const statistics = useWebSocket('ws://' + hostname + ':' + websocket_port + '/statistics', {
+const statistics = useWebSocket('ws://' + hostname + ':' + websocket_port + '/statistic/profit', {
   autoReconnect: true,
 })
 
