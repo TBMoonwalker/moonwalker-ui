@@ -98,12 +98,13 @@ type OrderData = {
 }
 
 function handle_deal_sell(data: any) {
-    dialog.warning({
+    const d = dialog.warning({
         title: 'Selling deal',
         content: 'Do you like to sell ' + data["amount"] + ' ' + data["symbol"] + ' ?',
         positiveText: 'Sell',
         negativeText: 'Do not sell',
         onPositiveClick: async () => {
+            d.loading = true
             const [symbol, currency] = data["symbol"].toLowerCase().split("/")
             const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/sell/${symbol + currency}`).then((response) =>
                 response.json()
@@ -124,13 +125,13 @@ function handle_deal_sell(data: any) {
 function handle_deal_buy(data: any) {
     var amount = ""
     const [symbol, currency] = data["symbol"].toLowerCase().split("/")
-    dialog.info({
+    const d = dialog.info({
         title: 'Adding funds',
         content: () => h(NInput, { onUpdateValue: (value) => { amount = value }, allowInput: (value: string) => !value || /^\d+$/.test(value), placeholder: "Add amount in " + currency.toUpperCase() }),
         positiveText: 'Add funds',
         negativeText: 'Cancel',
         onPositiveClick: async () => {
-
+            d.loading = true
             const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/buy/${symbol + currency}/${amount}`).then((response) =>
                 response.json()
             )
@@ -148,12 +149,13 @@ function handle_deal_buy(data: any) {
 }
 
 function handle_deal_stop(data: any) {
-    dialog.warning({
+    const d = dialog.warning({
         title: 'Stopping deal',
         content: 'Do you like to stop the deal for ' + data["symbol"] + ' ?',
         positiveText: 'Stop',
         negativeText: 'Do not stop',
         onPositiveClick: async () => {
+            d.loading = true
             const [symbol, currency] = data["symbol"].toLowerCase().split("/")
             const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/stop/${symbol + currency}`).then((response) =>
                 response.json()
