@@ -9,8 +9,9 @@ import { useWebSocketDataStore } from '../stores/websocket'
 import { storeToRefs } from 'pinia'
 import { Bar } from 'vue-chartjs'
 import { Chart as ChartJS, Tooltip, BarElement, CategoryScale, LinearScale } from 'chart.js'
-import zoomPlugin from 'chartjs-plugin-zoom'
-ChartJS.register(BarElement, Tooltip, CategoryScale, LinearScale, zoomPlugin)
+// import zoomPlugin from 'chartjs-plugin-zoom'
+//ChartJS.register(BarElement, Tooltip, CategoryScale, LinearScale, zoomPlugin)
+ChartJS.register(BarElement, Tooltip, CategoryScale, LinearScale)
 
 const statistics_store = useWebSocketDataStore("statistics")
 const statistics_data = storeToRefs(statistics_store)
@@ -84,7 +85,7 @@ function chart_classes(data: any) {
 }
 
 const chart_options = {
-    plugins: {
+    /* plugins: {
         zoom: {
             limits: {
                 x: { min: -1000, max: 1000, minRange: 50 },
@@ -102,7 +103,7 @@ const chart_options = {
                 },
             }
         },
-    },
+    }, */
     responsive: true,
     scales: {
         x: {

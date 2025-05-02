@@ -1,6 +1,8 @@
 # moonwalker-ui
 
-This template should help get you started developing with Vue 3 in Vite.
+![title](design.jpg)
+
+This steps should help get you started developing with Vue 3 in Vite.
 
 ## Project Setup
 
