@@ -4,7 +4,7 @@
 </template>
 
 <script setup lang="ts">
-import { MOONWALKER_API_PORT, MOONLOADER_API_PORT } from '../config'
+import { MOONWALKER_API_PORT } from '../config'
 import { h, ref, watch } from 'vue'
 import { type DataTableColumns, NTimeline, NTimelineItem, NDivider, NSlider, NButton, NButtonGroup, useDialog, useMessage, NInput, NFlex, NCard } from 'naive-ui'
 import { useWebSocketDataStore } from '../stores/websocket'
@@ -21,7 +21,6 @@ const dialog = useDialog()
 const message = useMessage()
 
 const moonwalker_api_port = MOONWALKER_API_PORT
-const moonloader_api_port = MOONLOADER_API_PORT
 const hostname = window.location.hostname
 
 watch(open_trade_data.json, async (newData) => {
@@ -271,8 +270,8 @@ const columns_trades = (): DataTableColumns<RowData> => {
                                                 },
                                             })
 
-                                            // OHLCV data from Moonloader
-                                            const ticker_data = await fetch(`http://${hostname}:${moonloader_api_port}/api/v1/data/ohlcv/${symbol + currency.toUpperCase()}/15min/${begin_timestamp}/${timezoneOffset()}`).then((response) =>
+                                            // OHLCV data from Moonwalker
+                                            const ticker_data = await fetch(`http://${hostname}:${moonwalker_api_port}/data/ohlcv/${symbol + currency.toUpperCase()}/15min/${begin_timestamp}/${timezoneOffset()}`).then((response) =>
                                                 response.json()
                                             )
                                             candlestickSeries.setData(ticker_data)
