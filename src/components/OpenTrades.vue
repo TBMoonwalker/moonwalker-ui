@@ -9,7 +9,7 @@ import { h, ref, watch } from 'vue'
 import { type DataTableColumns, NTimeline, NTimelineItem, NDivider, NSlider, NButton, NButtonGroup, useDialog, useMessage, NInput, NFlex, NCard } from 'naive-ui'
 import { useWebSocketDataStore } from '../stores/websocket'
 import { storeToRefs } from 'pinia'
-import { isFloat } from '../helpers/validators'
+import { isFloat, createDecimal } from '../helpers/validators'
 import { timezoneOffset } from '../helpers/timezone'
 import { createChart } from 'lightweight-charts'
 
@@ -236,6 +236,10 @@ const columns_trades = (): DataTableColumns<RowData> => {
                                                 end_timestamp = rowData.safetyorder[rowData.safetyorder.length - 1].timestamp
                                             }
                                             //console.log("Begin timestamp: " + begin_timestamp + ", End timestamp: " + end_timestamp)
+
+                                            // Create precision for candlestick prices
+                                            const precision = createDecimal(rowData.precision)
+
                                             chart = createChart(chartRef.value, {
                                                 autoSize: true,
                                                 layout: {
@@ -265,8 +269,7 @@ const columns_trades = (): DataTableColumns<RowData> => {
                                                 wickDownColor: "rgb(224, 108, 117)",
                                                 priceFormat: {
                                                     type: 'price',
-                                                    precision: rowData.precision,
-                                                    minMove: 0.00000001,
+                                                    minMove: precision,
                                                 },
                                             })
 
