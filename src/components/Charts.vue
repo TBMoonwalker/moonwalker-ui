@@ -34,7 +34,7 @@ watch(statistics_data.json, async (newData) => {
     let background_colors = []
 
     if (!historic_data) {
-        let data = await get_historic_chart_data()
+        await get_historic_chart_data()
     }
 
     historic_data = true
@@ -65,9 +65,6 @@ watch(statistics_data.json, async (newData) => {
 }, { immediate: true })
 
 async function get_historic_chart_data() {
-    let labels = []
-    let datasets = []
-    let background_colors = []
     let timestamp = Math.floor(Date.now() / 1000)
 
     historic_chart_data = await fetch(`http://${hostname}:${moonwalker_api_port}/statistic/profit/${timestamp}`).then((response) =>
