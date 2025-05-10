@@ -1,9 +1,5 @@
 <template>
-    <Bar
-        id="my-chart-id"
-        :options="chart_options"
-        :data="chart_data"
-    />
+    <Bar id="my-chart-id" :options="chart_options" :data="chart_data" />
 </template>
 
 <script setup lang="ts">
@@ -13,15 +9,17 @@ import { useWebSocketDataStore } from '../stores/websocket'
 import { storeToRefs } from 'pinia'
 import { Bar } from 'vue-chartjs'
 import { Chart as ChartJS, Tooltip, BarElement, CategoryScale, LinearScale } from 'chart.js'
+// import zoomPlugin from 'chartjs-plugin-zoom'
+//ChartJS.register(BarElement, Tooltip, CategoryScale, LinearScale, zoomPlugin)
 ChartJS.register(BarElement, Tooltip, CategoryScale, LinearScale)
 
 const statistics_store = useWebSocketDataStore("statistics")
 const statistics_data = storeToRefs(statistics_store)
 let historic_chart_data: any = [{}]
-const chart_data  = ref()
+const chart_data = ref()
 chart_data.value = {
     labels: [],
-    datasets: [{ }]
+    datasets: [{}]
 }
 
 const moonwalker_api_port = MOONWALKER_API_PORT
@@ -36,9 +34,9 @@ watch(statistics_data.json, async (newData) => {
     let background_colors = []
 
     if (!historic_data) {
-        let data = await get_historic_chart_data()
+        await get_historic_chart_data()
     }
-    
+
     historic_data = true
 
     if (newData !== undefined) {
@@ -53,10 +51,10 @@ watch(statistics_data.json, async (newData) => {
             background_colors.push(chart_classes(value))
         }
 
-        let actual_day_value =  Object.values(profit_week)[Object.values(profit_week).length - 1]
+        let actual_day_value = Object.values(profit_week)[Object.values(profit_week).length - 1]
 
         datasets.splice(datasets.length - 1, 1, actual_day_value)
-        
+
 
         chart_data.value = {
             labels: labels,
@@ -67,15 +65,12 @@ watch(statistics_data.json, async (newData) => {
 }, { immediate: true })
 
 async function get_historic_chart_data() {
-    let labels = []
-    let datasets = []
-    let background_colors = []
     let timestamp = Math.floor(Date.now() / 1000)
 
-    historic_chart_data  = await fetch(`http://${hostname}:${moonwalker_api_port}/profit/statistics/${timestamp}`).then((response) =>
-            response.json()
-        )
-    
+    historic_chart_data = await fetch(`http://${hostname}:${moonwalker_api_port}/statistic/profit/${timestamp}`).then((response) =>
+        response.json()
+    )
+
 }
 
 function chart_classes(data: any) {
@@ -87,6 +82,25 @@ function chart_classes(data: any) {
 }
 
 const chart_options = {
+    /* plugins: {
+        zoom: {
+            limits: {
+                x: { min: -1000, max: 1000, minRange: 50 },
+            },
+            pan: {
+                enabled: true,
+                mode: 'x' as const,
+            },
+            zoom: {
+                wheel: {
+                    enabled: false,
+                },
+                pinch: {
+                    enabled: true
+                },
+            }
+        },
+    }, */
     responsive: true,
     scales: {
         x: {
@@ -94,7 +108,7 @@ const chart_options = {
                 color: "white",
             },
             grid: {
-            display: false
+                display: false
             }
         },
         y: {
@@ -102,7 +116,7 @@ const chart_options = {
                 color: "white",
             },
             grid: {
-            display: false
+                display: false
             }
         }
     }

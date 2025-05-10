@@ -4,12 +4,12 @@
 </template>
 
 <script setup lang="ts">
-import { MOONWALKER_API_PORT, MOONLOADER_API_PORT } from '../config'
+import { MOONWALKER_API_PORT } from '../config'
 import { h, ref, watch } from 'vue'
 import { type DataTableColumns, NTimeline, NTimelineItem, NDivider, NSlider, NButton, NButtonGroup, useDialog, useMessage, NInput, NFlex, NCard } from 'naive-ui'
 import { useWebSocketDataStore } from '../stores/websocket'
 import { storeToRefs } from 'pinia'
-import { isFloat } from '../helpers/validators'
+import { isFloat, createDecimal } from '../helpers/validators'
 import { timezoneOffset } from '../helpers/timezone'
 import { createChart } from 'lightweight-charts'
 
@@ -21,7 +21,6 @@ const dialog = useDialog()
 const message = useMessage()
 
 const moonwalker_api_port = MOONWALKER_API_PORT
-const moonloader_api_port = MOONLOADER_API_PORT
 const hostname = window.location.hostname
 
 watch(open_trade_data.json, async (newData) => {
@@ -106,10 +105,10 @@ function handle_deal_sell(data: any) {
         onPositiveClick: async () => {
             d.loading = true
             const [symbol, currency] = data["symbol"].toLowerCase().split("/")
-            const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/sell/${symbol + currency}`).then((response) =>
+            const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/sell/${symbol + "-" + currency}`).then((response) =>
                 response.json()
             )
-            if (result["sell"]) {
+            if (result["result"] == "sell") {
                 message.success('Sold ' + data["amount"] + ' ' + data["symbol"])
             } else {
                 message.error('Failed to sell' + data["amount"] + ' ' + data["symbol"] + ' - please check your logs')
@@ -132,10 +131,10 @@ function handle_deal_buy(data: any) {
         negativeText: 'Cancel',
         onPositiveClick: async () => {
             d.loading = true
-            const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/buy/${symbol + currency}/${amount}`).then((response) =>
+            const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/buy/${symbol + "-" + currency}/${amount}`).then((response) =>
                 response.json()
             )
-            if (result["new_so"]) {
+            if (result["result"] == "new_so") {
                 message.success('Added ' + amount + ' ' + currency.toUpperCase() + ' for ' + symbol.toUpperCase())
             } else {
                 message.error('Failed to add ' + amount + ' ' + currency.toUpperCase() + ' for ' + symbol.toUpperCase())
@@ -157,10 +156,10 @@ function handle_deal_stop(data: any) {
         onPositiveClick: async () => {
             d.loading = true
             const [symbol, currency] = data["symbol"].toLowerCase().split("/")
-            const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/stop/${symbol + currency}`).then((response) =>
+            const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/stop/${symbol + "-" + currency}`).then((response) =>
                 response.json()
             )
-            if (result["sell"]) {
+            if (result["result"] == "stop") {
                 message.success('Stopped ' + data["symbol"] + ' Please trade it manually on your exchange')
             } else {
                 message.error('Failed to stop' + data["symbol"] + ' - please check your logs')
@@ -237,6 +236,10 @@ const columns_trades = (): DataTableColumns<RowData> => {
                                                 end_timestamp = rowData.safetyorder[rowData.safetyorder.length - 1].timestamp
                                             }
                                             //console.log("Begin timestamp: " + begin_timestamp + ", End timestamp: " + end_timestamp)
+
+                                            // Create precision for candlestick prices
+                                            const precision = createDecimal(rowData.precision)
+
                                             chart = createChart(chartRef.value, {
                                                 autoSize: true,
                                                 layout: {
@@ -266,13 +269,12 @@ const columns_trades = (): DataTableColumns<RowData> => {
                                                 wickDownColor: "rgb(224, 108, 117)",
                                                 priceFormat: {
                                                     type: 'price',
-                                                    precision: rowData.precision,
-                                                    minMove: 0.00000001,
+                                                    minMove: precision,
                                                 },
                                             })
 
-                                            // OHLCV data from Moonloader
-                                            const ticker_data = await fetch(`http://${hostname}:${moonloader_api_port}/api/v1/data/ohlcv/${symbol + currency.toUpperCase()}/15min/${begin_timestamp}/${timezoneOffset()}`).then((response) =>
+                                            // OHLCV data from Moonwalker
+                                            const ticker_data = await fetch(`http://${hostname}:${moonwalker_api_port}/data/ohlcv/${symbol + currency.toUpperCase()}/15min/${begin_timestamp}/${timezoneOffset()}`).then((response) =>
                                                 response.json()
                                             )
                                             candlestickSeries.setData(ticker_data)
