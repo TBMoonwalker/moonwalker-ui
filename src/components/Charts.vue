@@ -1,5 +1,5 @@
 <template>
-    <Bar id="my-chart-id" :options="chart_options" :data="chart_data" />
+    <v-chart class="chart" :option="option" autoresize />
 </template>
 
 <script setup lang="ts">
@@ -7,11 +7,13 @@ import { MOONWALKER_API_PORT, MOONWALKER_API_HOST } from '../config'
 import { ref, watch } from 'vue'
 import { useWebSocketDataStore } from '../stores/websocket'
 import { storeToRefs } from 'pinia'
-import { Bar } from 'vue-chartjs'
-import { Chart as ChartJS, Tooltip, BarElement, CategoryScale, LinearScale } from 'chart.js'
-// import zoomPlugin from 'chartjs-plugin-zoom'
-//ChartJS.register(BarElement, Tooltip, CategoryScale, LinearScale, zoomPlugin)
-ChartJS.register(BarElement, Tooltip, CategoryScale, LinearScale)
+import { use } from 'echarts/core'
+import { BarChart } from 'echarts/charts'
+import { GridComponent } from 'echarts/components'
+import { CanvasRenderer } from 'echarts/renderers'
+import VChart from 'vue-echarts'
+use([GridComponent, BarChart, CanvasRenderer])
+
 
 const statistics_store = useWebSocketDataStore("statistics")
 const statistics_data = storeToRefs(statistics_store)
@@ -22,13 +24,14 @@ chart_data.value = {
     datasets: [{}]
 }
 
+const option = ref({})
+
 let historic_data = false
 
 // Get new statistics data
 watch(statistics_data.json, async (newData) => {
     let labels = []
     let datasets = []
-    let background_colors = []
 
     if (!historic_data) {
         await get_historic_chart_data()
@@ -44,18 +47,45 @@ watch(statistics_data.json, async (newData) => {
         for (let key in profit_month) {
             let value = profit_month[key]
             labels.push(key)
-            datasets.push(value)
-            background_colors.push(chart_classes(value))
+            datasets.push(chart_classes(value))
         }
 
         let actual_day_value = Object.values(profit_week)[Object.values(profit_week).length - 1]
 
-        datasets.splice(datasets.length - 1, 1, actual_day_value)
+        datasets.splice(datasets.length - 1, 1, chart_classes(actual_day_value))
+
 
 
         chart_data.value = {
             labels: labels,
-            datasets: [{ data: datasets, backgroundColor: background_colors, borderRadius: 5 }]
+            datasets: datasets
+        }
+
+
+        option.value = {
+            grid: { show: false },
+            xAxis: {
+                axisLine: { show: false },
+                axisTick: { show: false },
+                axisLabel: { color: "#fff" },
+                type: 'category',
+                data: chart_data.value.labels
+            },
+            yAxis: {
+                axisLabel: { color: "#fff" },
+                splitLine: {
+                    show: false
+                },
+                type: 'value'
+            },
+            series: [
+                {
+                    color: 'rgb(99, 226, 183)',
+                    data: chart_data.value.datasets,
+                    type: 'bar',
+                    itemStyle: { borderRadius: 4 }
+                }
+            ]
         }
     }
 
@@ -71,52 +101,25 @@ async function get_historic_chart_data() {
 }
 
 function chart_classes(data: any) {
-    if (Math.sign(data) >= 0) {
-        return 'rgb(99, 226, 183)'
-    } else {
-        return 'rgb(224, 108, 117)'
+    let column_color = 'rgb(99, 226, 183)'
+    if (Math.sign(data) <= 0) {
+        column_color = 'rgb(224, 108, 117)'
     }
-}
-
-const chart_options = {
-    /* plugins: {
-        zoom: {
-            limits: {
-                x: { min: -1000, max: 1000, minRange: 50 },
-            },
-            pan: {
-                enabled: true,
-                mode: 'x' as const,
-            },
-            zoom: {
-                wheel: {
-                    enabled: false,
-                },
-                pinch: {
-                    enabled: true
-                },
-            }
-        },
-    }, */
-    responsive: true,
-    scales: {
-        x: {
-            ticks: {
-                color: "white",
-            },
-            grid: {
-                display: false
-            }
-        },
-        y: {
-            ticks: {
-                color: "white",
-            },
-            grid: {
-                display: false
-            }
+    return {
+        value: data,
+        itemStyle: {
+            color: column_color
         }
     }
 }
 
 </script>
+
+<style scoped>
+.chart {
+    height: 40vh;
+    max-width: 100%;
+    margin-top: -50px;
+    margin-bottom: -30px;
+}
+</style>
