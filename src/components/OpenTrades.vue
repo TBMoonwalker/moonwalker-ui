@@ -6,7 +6,7 @@
 <script setup lang="ts">
 import { MOONWALKER_API_PORT, MOONWALKER_API_HOST } from '../config'
 import { h, ref, watch } from 'vue'
-import { type DataTableColumns, NTimeline, NTimelineItem, NDivider, NSlider, NButton, NButtonGroup, useDialog, useMessage, NInput, NFlex, NCard, NIcon } from 'naive-ui'
+import { type DataTableColumns, NTimeline, NTimelineItem, NDivider, NSlider, NButton, NButtonGroup, useDialog, useMessage, NInput, NFlex, NCard, NIcon, NHighlight } from 'naive-ui'
 import { useWebSocketDataStore } from '../stores/websocket'
 import { storeToRefs } from 'pinia'
 import { isFloat, createDecimal } from '../helpers/validators'
@@ -182,6 +182,7 @@ function row_classes(row: RowData) {
 const renderExpandIcon = () => {
     return h(NIcon, { size: 24, color: "#63e2b7" }, { default: () => h(ArrowForwardCircleOutline) })
 }
+
 
 const columns_trades = (): DataTableColumns<RowData> => {
     return [
@@ -366,18 +367,16 @@ const columns_trades = (): DataTableColumns<RowData> => {
             }
         },
         {
-            title: '#',
-            key: 'key',
-            render: (_, index) => {
-                return `${index + 1}`
-            }
-        },
-        {
             title: 'Symbol',
             key: 'symbol',
-            render: (rowData) => {
+            render: (rowData, index) => {
                 const [symbol, currency] = rowData.symbol.split("/")
-                return `${symbol}`
+                return [
+                    h('div', { innerHTML: "#" + (index + 1) }),
+
+                    h(NDivider, { dashed: true }),
+                    h('div', { innerHTML: symbol }),
+                ]
             }
         },
         {
@@ -479,6 +478,6 @@ const columns_open_trades = columns_trades()
 }
 
 :deep(.n-data-table-expand-trigger) {
-    height: 24px;
+    height: 16px;
 }
 </style>
