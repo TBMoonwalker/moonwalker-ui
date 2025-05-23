@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { MOONWALKER_API_PORT } from '../config'
+import { MOONWALKER_API_PORT, MOONWALKER_API_HOST } from '../config'
 import { ref, watch } from 'vue'
 import { useWebSocketDataStore } from '../stores/websocket'
 import { storeToRefs } from 'pinia'
@@ -21,9 +21,6 @@ chart_data.value = {
     labels: [],
     datasets: [{}]
 }
-
-const moonwalker_api_port = MOONWALKER_API_PORT
-const hostname = window.location.hostname
 
 let historic_data = false
 
@@ -67,7 +64,7 @@ watch(statistics_data.json, async (newData) => {
 async function get_historic_chart_data() {
     let timestamp = Math.floor(Date.now() / 1000)
 
-    historic_chart_data = await fetch(`http://${hostname}:${moonwalker_api_port}/statistic/profit/${timestamp}`).then((response) =>
+    historic_chart_data = await fetch(`http://${MOONWALKER_API_HOST}:${MOONWALKER_API_PORT}/statistic/profit/${timestamp}`).then((response) =>
         response.json()
     )
 

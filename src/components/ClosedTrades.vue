@@ -186,6 +186,6 @@ const columns_closed_trades = columns_trades()
 }
 
 .n-data-table {
-    width: 98%;
+    width: 97.5%;
 }
 </style>

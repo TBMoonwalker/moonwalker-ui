@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MOONWALKER_API_PORT } from './config'
+import { MOONWALKER_API_PORT, MOONWALKER_API_HOST } from './config'
 import { RouterView } from 'vue-router'
 import Header from './components/Header.vue'
 import { useOsTheme, darkTheme } from 'naive-ui'
@@ -17,15 +17,15 @@ const statistics_store = useWebSocketDataStore("statistics")
 const websocket_port = MOONWALKER_API_PORT
 const hostname = window.location.hostname
 
-const closed_orders = useWebSocket('ws://' + hostname + ':' + websocket_port + '/trades/closed', {
+const closed_orders = useWebSocket('ws://' + MOONWALKER_API_HOST + ':' + MOONWALKER_API_PORT + '/trades/closed', {
   autoReconnect: true,
 })
 
-const open_orders = useWebSocket('ws://' + hostname + ':' + websocket_port + '/trades/open', {
+const open_orders = useWebSocket('ws://' + MOONWALKER_API_HOST + ':' + MOONWALKER_API_PORT + '/trades/open', {
   autoReconnect: true,
 })
 
-const statistics = useWebSocket('ws://' + hostname + ':' + websocket_port + '/statistic/profit', {
+const statistics = useWebSocket('ws://' + MOONWALKER_API_HOST + ':' + MOONWALKER_API_PORT + '/statistic/profit', {
   autoReconnect: true,
 })
 

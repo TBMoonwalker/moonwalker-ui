@@ -1,17 +1,19 @@
 <template>
     <n-data-table size="small" remote ref="table" :columns="columns_open_trades" :data="open_trades"
-        :row-class-name="row_classes" />
+        :row-class-name="row_classes" :render-expand-icon="renderExpandIcon" />
 </template>
 
 <script setup lang="ts">
-import { MOONWALKER_API_PORT } from '../config'
+import { MOONWALKER_API_PORT, MOONWALKER_API_HOST } from '../config'
 import { h, ref, watch } from 'vue'
-import { type DataTableColumns, NTimeline, NTimelineItem, NDivider, NSlider, NButton, NButtonGroup, useDialog, useMessage, NInput, NFlex, NCard } from 'naive-ui'
+import { type DataTableColumns, NTimeline, NTimelineItem, NDivider, NSlider, NButton, NButtonGroup, useDialog, useMessage, NInput, NFlex, NCard, NIcon } from 'naive-ui'
 import { useWebSocketDataStore } from '../stores/websocket'
 import { storeToRefs } from 'pinia'
 import { isFloat, createDecimal } from '../helpers/validators'
 import { timezoneOffset } from '../helpers/timezone'
 import { createChart } from 'lightweight-charts'
+import { ArrowForwardCircleOutline } from '@vicons/ionicons5'
+import { largerSize } from 'naive-ui/es/_utils'
 
 const open_trade_store = useWebSocketDataStore("openTrades")
 const open_trade_data = storeToRefs(open_trade_store)
@@ -19,9 +21,6 @@ const open_trades = ref()
 
 const dialog = useDialog()
 const message = useMessage()
-
-const moonwalker_api_port = MOONWALKER_API_PORT
-const hostname = window.location.hostname
 
 watch(open_trade_data.json, async (newData) => {
     if (newData !== undefined) {
@@ -105,7 +104,7 @@ function handle_deal_sell(data: any) {
         onPositiveClick: async () => {
             d.loading = true
             const [symbol, currency] = data["symbol"].toLowerCase().split("/")
-            const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/sell/${symbol + "-" + currency}`).then((response) =>
+            const result = await fetch(`http://${MOONWALKER_API_HOST}:${MOONWALKER_API_PORT}/orders/sell/${symbol + "-" + currency}`).then((response) =>
                 response.json()
             )
             if (result["result"] == "sell") {
@@ -131,7 +130,7 @@ function handle_deal_buy(data: any) {
         negativeText: 'Cancel',
         onPositiveClick: async () => {
             d.loading = true
-            const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/buy/${symbol + "-" + currency}/${amount}`).then((response) =>
+            const result = await fetch(`http://${MOONWALKER_API_HOST}:${MOONWALKER_API_PORT}/orders/buy/${symbol + "-" + currency}/${amount}`).then((response) =>
                 response.json()
             )
             if (result["result"] == "new_so") {
@@ -156,7 +155,7 @@ function handle_deal_stop(data: any) {
         onPositiveClick: async () => {
             d.loading = true
             const [symbol, currency] = data["symbol"].toLowerCase().split("/")
-            const result = await fetch(`http://${hostname}:${moonwalker_api_port}/orders/stop/${symbol + "-" + currency}`).then((response) =>
+            const result = await fetch(`http://${MOONWALKER_API_HOST}:${MOONWALKER_API_PORT}/orders/stop/${symbol + "-" + currency}`).then((response) =>
                 response.json()
             )
             if (result["result"] == "stop") {
@@ -178,6 +177,10 @@ function row_classes(row: RowData) {
     } else {
         return 'red'
     }
+}
+
+const renderExpandIcon = () => {
+    return h(NIcon, { size: 24, color: "#63e2b7" }, { default: () => h(ArrowForwardCircleOutline) })
 }
 
 const columns_trades = (): DataTableColumns<RowData> => {
@@ -274,7 +277,7 @@ const columns_trades = (): DataTableColumns<RowData> => {
                                             })
 
                                             // OHLCV data from Moonwalker
-                                            const ticker_data = await fetch(`http://${hostname}:${moonwalker_api_port}/data/ohlcv/${symbol + currency.toUpperCase()}/15min/${begin_timestamp}/${timezoneOffset()}`).then((response) =>
+                                            const ticker_data = await fetch(`http://${MOONWALKER_API_HOST}:${MOONWALKER_API_PORT}/data/ohlcv/${symbol + currency.toUpperCase()}/15min/${begin_timestamp}/${timezoneOffset()}`).then((response) =>
                                                 response.json()
                                             )
                                             candlestickSeries.setData(ticker_data)
@@ -372,6 +375,10 @@ const columns_trades = (): DataTableColumns<RowData> => {
         {
             title: 'Symbol',
             key: 'symbol',
+            render: (rowData) => {
+                const [symbol, currency] = rowData.symbol.split("/")
+                return `${symbol}`
+            }
         },
         {
             title: 'Cost',
@@ -434,11 +441,11 @@ const columns_trades = (): DataTableColumns<RowData> => {
             key: 'action',
             render: (rowData) => {
                 return [
-                    h(NButtonGroup, { size: 'small' }, {
+                    h(NButtonGroup, { size: 'small', vertical: true }, {
                         default: () => [
-                            h(NButton, { primary: true, size: 'small', onClick: () => handle_deal_sell(rowData) }, { default: () => 'Sell' }),
-                            h(NButton, { primary: true, size: 'small', onClick: () => handle_deal_buy(rowData) }, { default: () => 'Buy' }),
-                            h(NButton, { primary: true, size: 'small', onClick: () => handle_deal_stop(rowData) }, { default: () => 'Stop' })
+                            h(NButton, { primary: true, size: 'small', ghost: true, color: "#63e2b7", onClick: () => handle_deal_sell(rowData) }, { default: () => 'Sell' }),
+                            h(NButton, { primary: true, size: 'small', ghost: true, color: "#63e2b7", onClick: () => handle_deal_buy(rowData) }, { default: () => 'Buy' }),
+                            h(NButton, { primary: true, size: 'small', ghost: true, color: "#63e2b7", onClick: () => handle_deal_stop(rowData) }, { default: () => 'Stop' })
                         ]
                     })
                 ]
@@ -448,7 +455,15 @@ const columns_trades = (): DataTableColumns<RowData> => {
         {
             title: 'Opened',
             key: 'open_date',
-            align: 'center'
+            align: 'center',
+            render: (rowData) => {
+                const [date, time] = rowData.open_date.split(",")
+                return [
+                    h('div', { innerHTML: date }),
+                    h(NDivider, { dashed: true }),
+                    h('div', { innerHTML: time }),
+                ]
+            }
         },
     ]
 }
@@ -467,6 +482,10 @@ const columns_open_trades = columns_trades()
 }
 
 .n-data-table {
-    width: 97%;
+    width: 97.5%;
+}
+
+:deep(.n-data-table-expand-trigger) {
+    height: 24px;
 }
 </style>
