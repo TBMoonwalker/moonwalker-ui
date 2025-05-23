@@ -13,7 +13,7 @@ import Charts from '@/components/Charts.vue'
     <n-card content-style="padding: 0;">
       <n-tabs type="line" size="large" :tabs-padding="20" pane-style="padding: 20px;">
         <n-tab-pane name="Daily Profit">
-          <div class="chart-wrapper" style="position: relative; height: 25vh; width: 98%;">
+          <div class="chart-wrapper" style="position: relative; height: 25vh; width: 97%;">
             <Charts />
           </div>
         </n-tab-pane>
