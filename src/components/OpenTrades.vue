@@ -481,10 +481,6 @@ const columns_open_trades = columns_trades()
     color: rgb(99, 226, 183) !important;
 }
 
-.n-data-table {
-    width: 97.5%;
-}
-
 :deep(.n-data-table-expand-trigger) {
     height: 24px;
 }

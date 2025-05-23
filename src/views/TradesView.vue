@@ -9,11 +9,11 @@ import Charts from '@/components/Charts.vue'
   <n-flex justify="space-between" :style="{ width: '92%' }">
     <Statistics />
   </n-flex>
-  <n-flex vertical :style="{ display: 'flex', flexDirection: 'column', gap: '16px', width: '95%' }">
+  <n-flex vertical :style="{ display: 'flex', flexDirection: 'column', gap: '16px', width: '98%' }">
     <n-card content-style="padding: 0;">
       <n-tabs type="line" size="large" :tabs-padding="20" pane-style="padding: 20px;">
         <n-tab-pane name="Daily Profit">
-          <div class="chart-wrapper" style="position: relative; height: 25vh; width: 92%;">
+          <div class="chart-wrapper" style="position: relative; height: 25vh; width: 100%;">
             <Charts />
           </div>
         </n-tab-pane>
@@ -23,10 +23,10 @@ import Charts from '@/components/Charts.vue'
       </n-tabs>
     </n-card>
   </n-flex>
-  <n-flex vertical :style="{ display: 'flex', flexDirection: 'column', gap: '16px', width: '95%' }">
+  <n-flex vertical :style="{ display: 'flex', flexDirection: 'column', gap: '16px', width: '98%' }">
     <n-card content-style="padding: 0;">
-      <n-tabs type="line" size="large" :tabs-padding="20" pane-style="padding: 20px;">
-        <n-tab-pane name="Open Trades">
+      <n-tabs size="large" :tabs-padding="20">
+        <n-tab-pane name=" Open Trades">
           <OpenTrades />
         </n-tab-pane>
         <n-tab-pane name="Closed Trades">

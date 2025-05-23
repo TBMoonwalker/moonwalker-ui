@@ -184,8 +184,4 @@ const columns_closed_trades = columns_trades()
 :deep(.green .profit) {
     color: rgb(99, 226, 183) !important;
 }
-
-.n-data-table {
-    width: 97.5%;
-}
 </style>

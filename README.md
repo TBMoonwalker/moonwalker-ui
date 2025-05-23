@@ -6,7 +6,7 @@ This steps should help get you started developing with Vue 3 in Vite.
 
 ## Project Setup
 
-create a `config.ts`file with the following content:
+create a `src/config.ts`file with the following content:
 
 export const MOONWALKER_API_PORT = 8150 (Port which is configured in Moonwalker)
 export const MOONWALKER_API_HOST = window.location.hostname (or use a fix ip, dns name)
@@ -16,10 +16,6 @@ export const MOONWALKER_API_HOST = window.location.hostname (or use a fix ip, dn
 ```sh
 npm install
 ```
-
-### Change listening port (if you don't use standard Moonwalker Port)
-
-Port can be found in `src/config.ts`
 
 ### Compile and Hot-Reload for Development
 
