@@ -410,7 +410,7 @@ const columns_trades = (): DataTableColumns<RowData> => {
             }
         },
         {
-            title: 'TP',
+            title: 'TP/SO',
             key: 'tp_price',
             render: (rowData) => {
                 const avg_price = rowData.avg_price
@@ -427,13 +427,10 @@ const columns_trades = (): DataTableColumns<RowData> => {
                 }
                 return [
                     h(NSlider, { value: [current_price, avg_price], range: true, min: min_price, max: max_price, disabled: true, themeOverrides: { fillColor: fillColor.value, handleSize: '8px', opacityDisabled: '1' } }),
+                    h(NDivider, { dashed: true }),
+                    h('div', { innerHTML: rowData.so_count }),
                 ]
             },
-            align: 'center'
-        },
-        {
-            title: 'SO',
-            key: 'so_count',
             align: 'center'
         },
         {
