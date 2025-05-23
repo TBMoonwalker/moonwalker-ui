@@ -4,7 +4,7 @@
 </template>
 
 <script setup lang="ts">
-import { MOONWALKER_API_PORT } from '../config'
+import { MOONWALKER_API_PORT, MOONWALKER_API_HOST } from '../config'
 import { ref, watch, reactive } from 'vue'
 import { type DataTableColumns } from 'naive-ui'
 import { useWebSocketDataStore } from '../stores/websocket'
@@ -25,8 +25,6 @@ const pageReactive = reactive({
         return `Total ${itemCount} trades`
     }
 });
-const moonwalker_api_port = MOONWALKER_API_PORT
-const hostname = window.location.hostname
 
 const updatePageCount = () => {
     pageReactive.pageCount = Math.ceil(closed_trades_length.value / pageReactive.pageSize)
@@ -40,7 +38,7 @@ const updateData = async (currentPage: number) => {
         paged_closed_trades.value = data.value
     } else {
         pagination = (currentPage - 1) * pageReactive.pageSize
-        const data = await fetch(`http://${hostname}:${moonwalker_api_port}/trades/closed/${pagination}`).then((response) =>
+        const data = await fetch(`http://${MOONWALKER_API_HOST}:${MOONWALKER_API_PORT}/trades/closed/${pagination}`).then((response) =>
             response.json()
         )
 
@@ -99,7 +97,7 @@ watch(closed_trade_data.json, async (newData) => {
         closed_trades.value = await convertData(websocket_data)
 
         // Get actual closed orders length to calculate pagination
-        closed_trades_length.value = await fetch(`http://${hostname}:${moonwalker_api_port}/trades/closed/length`).then((response) =>
+        closed_trades_length.value = await fetch(`http://${MOONWALKER_API_HOST}:${MOONWALKER_API_PORT}/trades/closed/length`).then((response) =>
             response.json()
         )
         updatePageCount()
@@ -136,7 +134,7 @@ const columns_trades = (): DataTableColumns<RowData> => {
             defaultSortOrder: 'ascend'
         },
         {
-            title: 'Symbol',
+            title: 'Pair',
             key: 'symbol',
         },
         {
