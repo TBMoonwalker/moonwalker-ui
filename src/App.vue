@@ -14,8 +14,6 @@ const theme = computed(() => (osThemeRef.value === 'dark' ? darkTheme : null))
 const open_trade_store = useWebSocketDataStore("openTrades")
 const closed_trade_store = useWebSocketDataStore("closedTrades")
 const statistics_store = useWebSocketDataStore("statistics")
-const websocket_port = MOONWALKER_API_PORT
-const hostname = window.location.hostname
 
 const closed_orders = useWebSocket('ws://' + MOONWALKER_API_HOST + ':' + MOONWALKER_API_PORT + '/trades/closed', {
   autoReconnect: true,

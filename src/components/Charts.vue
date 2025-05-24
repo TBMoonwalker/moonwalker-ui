@@ -9,10 +9,10 @@ import { useWebSocketDataStore } from '../stores/websocket'
 import { storeToRefs } from 'pinia'
 import { use } from 'echarts/core'
 import { BarChart } from 'echarts/charts'
-import { GridComponent } from 'echarts/components'
+import { GridComponent, TooltipComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import VChart from 'vue-echarts'
-use([GridComponent, BarChart, CanvasRenderer])
+use([GridComponent, TooltipComponent, BarChart, CanvasRenderer])
 
 
 const statistics_store = useWebSocketDataStore("statistics")
@@ -64,6 +64,12 @@ watch(statistics_data.json, async (newData) => {
 
         option.value = {
             grid: { show: false },
+            tooltip: {
+                trigger: "axis",
+                axisPointer: {
+                    type: "shadow"
+                }
+            },
             xAxis: {
                 axisLine: { show: false },
                 axisTick: { show: false },
