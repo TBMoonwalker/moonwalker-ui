@@ -39,10 +39,6 @@ watch(closed_orders.data, async (newData) => {
 watch(statistics.data, async (newData) => {
   statistics_store.json = newData
 })
-
-// API Call Methods
-
-
 </script>
 
 <template>

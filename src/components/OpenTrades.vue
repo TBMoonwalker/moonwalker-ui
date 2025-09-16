@@ -11,9 +11,8 @@ import { useWebSocketDataStore } from '../stores/websocket'
 import { storeToRefs } from 'pinia'
 import { isFloat, createDecimal } from '../helpers/validators'
 import { timezoneOffset } from '../helpers/timezone'
-import { createChart } from 'lightweight-charts'
+import { createChart, CandlestickSeries, createSeriesMarkers } from 'lightweight-charts'
 import { ArrowForwardCircleOutline } from '@vicons/ionicons5'
-import { largerSize } from 'naive-ui/es/_utils'
 
 const open_trade_store = useWebSocketDataStore("openTrades")
 const open_trade_data = storeToRefs(open_trade_store)
@@ -264,7 +263,7 @@ const columns_trades = (): DataTableColumns<RowData> => {
                                                 handleScroll: true,
                                                 handleScale: false,
                                             })
-                                            const candlestickSeries = chart.addCandlestickSeries({
+                                            const candlestickSeries = chart.addSeries(CandlestickSeries, {
                                                 upColor: "rgb(99, 226, 183)",
                                                 borderUpColor: "rgb(99, 226, 183)",
                                                 wickUpColor: "rgb(99, 226, 183)",
@@ -304,6 +303,7 @@ const columns_trades = (): DataTableColumns<RowData> => {
                                             let baseorder_datetime = Math.trunc(Number(begin_timestamp) / 1000) - (Math.trunc(Number(begin_timestamp) / 1000) % seconds)
                                             baseorder_datetime += 60 * timezoneOffset()
                                             // Baseorder marker
+                                            //const baseorderMarker = createSeriesMarkers(candles)
                                             marker_data.push({
                                                 time: baseorder_datetime,
                                                 position: 'belowBar',
@@ -348,8 +348,7 @@ const columns_trades = (): DataTableColumns<RowData> => {
                                                 })
                                             }
 
-                                            const candlestickMarkers = marker_data
-                                            candlestickSeries.setMarkers(candlestickMarkers)
+                                            createSeriesMarkers(candlestickSeries, marker_data)
 
                                             chart.timeScale().fitContent()
                                         },

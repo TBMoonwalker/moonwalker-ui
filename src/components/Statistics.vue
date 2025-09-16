@@ -1,6 +1,7 @@
 <template>
     <n-statistic :class="profit_class" label="Profit overall" :value="profit_overall" />
     <n-statistic :class="upnl_class" label="UPNL" :value="upnl" />
+    <n-statistic label="Autopilot mode" :value="autopilot_mode" />
     <n-statistic label="Funds locked" :value="funds_locked" />
 </template>
 
@@ -16,6 +17,8 @@ const profit_class = ref()
 const upnl = ref()
 const upnl_class = ref()
 const funds_locked = ref()
+const autopilot_mode = ref()
+autopilot_mode.value = "Medium"
 
 // Get new statistics data
 watch(statistics_data.json, async (newData) => {
@@ -42,12 +45,10 @@ function row_classes(data: any) {
 
 <style scoped>
 .red {
-  --n-value-text-color: rgb(224, 108, 117) !important;
+    --n-value-text-color: rgb(224, 108, 117) !important;
 }
 
 .green {
     --n-value-text-color: rgb(99, 226, 183) !important;
 }
 </style>
-
-
